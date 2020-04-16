@@ -33,13 +33,6 @@
         <version>1.2</version>
     </parent>
 
-    <scm>
-        <url>https://github.com/wso2-extensions/identity-governance.git</url>
-        <developerConnection>scm:git:https://github.com/wso2-extensions/identity-governance.git</developerConnection>
-        <connection>scm:git:https://github.com/wso2-extensions/identity-governance.git</connection>
-        <tag>v1.4.1</tag>
-    </scm>
-
     <repositories>
         <repository>
             <id>wso2-nexus</id>
@@ -524,18 +517,6 @@
         </pluginManagement>
 
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <configuration>
-                    <preparationGoals>clean install</preparationGoals>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-            </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.compiler.plugin.version}</version>
