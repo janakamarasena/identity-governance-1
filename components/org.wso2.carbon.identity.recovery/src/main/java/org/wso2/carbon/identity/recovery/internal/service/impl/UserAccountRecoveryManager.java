@@ -263,13 +263,13 @@ public class UserAccountRecoveryManager {
     /**
      * Prepare the response to be sent to the recovery APIs.
      *
-     * @param username                Username of the user
+     * @param username                Username of the user.
      * @param recoveryCode            Recovery code given to the user.
      * @param notificationChannelDTOs List of NotificationChannelsResponseDTOs available for the user.
-     * @return RecoveryChannelInfoDTO object
+     * @return RecoveryChannelInfoDTO object.
      */
     private RecoveryChannelInfoDTO buildUserRecoveryInformationResponseDTO(String username, String recoveryCode,
-                                                                           NotificationChannelDTO[] notificationChannelDTOs) {
+                                                                 NotificationChannelDTO[] notificationChannelDTOs) {
 
         RecoveryChannelInfoDTO recoveryChannelInfoDTO = new RecoveryChannelInfoDTO();
         recoveryChannelInfoDTO.setUsername(username);
@@ -282,16 +282,15 @@ public class UserAccountRecoveryManager {
      * Get the list of available channels with the channel attributes associated to each channel as a list of
      * NotificationChannelsResponseDTOs.
      *
-     * @param userName             UserName of the user
-     * @param recoveryID           RecoveryId
+     * @param userName             UserName of the user.
+     * @param recoveryID           RecoveryId.
      * @param tenantDomain         Tenant domain.
-     * @param notificationChannels Notification channels list
-     * @param recoveryScenario     Recovery scenario
-     * @return NotificationChannelsResponseDTSs list
+     * @param notificationChannels Notification channels list.
+     * @param recoveryScenario     Recovery scenario.
+     * @return NotificationChannelsResponseDTSs list.
      */
     private NotificationChannelDTO[] getNotificationChannelsResponseDTOList(String userName, String recoveryID,
-                                                                            String tenantDomain,
-                                                                            List<NotificationChannel> notificationChannels,
+                                               String tenantDomain, List<NotificationChannel> notificationChannels,
                                                                             RecoveryScenarios recoveryScenario)
             throws IdentityRecoveryException {
 
@@ -661,7 +660,7 @@ public class UserAccountRecoveryManager {
     private User buildUser(String username, String tenantDomain) {
 
         User user = new User();
-        user.setUserName(UserCoreUtil.removeDomainFromName(username));
+        user.setUserName(username);
         user.setTenantDomain(tenantDomain);
         user.setUserStoreDomain(IdentityUtil.extractDomainFromName(username));
         return user;
