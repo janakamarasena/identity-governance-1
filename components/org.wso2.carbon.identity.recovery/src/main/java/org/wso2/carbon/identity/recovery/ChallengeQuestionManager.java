@@ -23,11 +23,17 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.context.CarbonContext;
 import org.wso2.carbon.identity.application.common.model.User;
 import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.base.IdentityRuntimeException;
 import org.wso2.carbon.identity.core.persistence.registry.RegistryResourceMgtService;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
+import org.wso2.carbon.identity.event.IdentityEventClientException;
+import org.wso2.carbon.identity.event.IdentityEventConstants;
+import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.identity.event.IdentityEventServerException;
+import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.recovery.internal.IdentityRecoveryServiceDataHolder;
 import org.wso2.carbon.identity.recovery.model.ChallengeQuestion;
 import org.wso2.carbon.identity.recovery.model.UserChallengeAnswer;
@@ -39,13 +45,14 @@ import org.wso2.carbon.registry.core.Resource;
 import org.wso2.carbon.registry.core.ResourceImpl;
 import org.wso2.carbon.registry.core.exceptions.RegistryException;
 import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.core.UserStoreManager;
 import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -76,7 +83,6 @@ public class ChallengeQuestionManager {
     private RegistryResourceMgtService resourceMgtService = dataHolder.getResourceMgtService();
 
     private static final String QUESTIONS_BASE_PATH = IdentityRecoveryConstants.IDENTITY_MANAGEMENT_QUESTIONS;
-
 
     /**
      * Get all challenge questions registered for a tenant.
@@ -426,7 +432,6 @@ public class ChallengeQuestionManager {
         }
     }
 
-
     /**
      * Retrieve the challenge question answered from a particular challenge question set.
      *
@@ -543,6 +548,8 @@ public class ChallengeQuestionManager {
     public void setChallengesOfUser(User user, UserChallengeAnswer[] userChallengeAnswers) throws IdentityRecoveryException {
 
         validateUser(user);
+        String preSetChallengeAnswerValidationEvent = IdentityEventConstants.Event.PRE_SET_CHALLENGE_QUESTION_ANSWERS;
+        triggerChallengeAnswersValidation(user, userChallengeAnswers, preSetChallengeAnswerValidationEvent);
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Setting user challenge question answers in %s's profile.", user.toString()));
@@ -600,6 +607,47 @@ public class ChallengeQuestionManager {
         } catch (org.wso2.carbon.user.api.UserStoreException e) {
             throw Utils.handleServerException(
                     ERROR_CODE_REMOVING_CHALLENGE_QUESTIONS, user.getUserName(), e);
+        }
+    }
+
+    /**
+     * Trigger challenge question answers validation according to the given event name.
+     */
+    private void triggerChallengeAnswersValidation(User user, UserChallengeAnswer[] userChallengeAnswers,
+                                                   String eventName)
+            throws IdentityRecoveryClientException, IdentityRecoveryServerException {
+
+        HashMap<String, Object> properties = new HashMap<>();
+        properties.put(IdentityEventConstants.EventProperty.USER_NAME, user.getUserName());
+        properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, user.getTenantDomain());
+        properties.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, user.getUserStoreDomain());
+        properties.put(IdentityEventConstants.EventProperty.USER_CHALLENGE_ANSWERS, userChallengeAnswers);
+
+        try {
+            UserStoreManager userStoreManager;
+            if(IdentityUtil.getPrimaryDomainName().equals(user.getUserStoreDomain())) {
+                userStoreManager = (UserStoreManager) CarbonContext.getThreadLocalCarbonContext().getUserRealm()
+                        .getUserStoreManager();
+            } else {
+                userStoreManager = ((UserStoreManager) CarbonContext.getThreadLocalCarbonContext().getUserRealm()
+                        .getUserStoreManager()).getSecondaryUserStoreManager(user.getUserStoreDomain());
+            }
+            properties.put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
+        } catch (UserStoreException e) {
+            throw Utils.handleServerException(IdentityRecoveryConstants.ErrorMessages.
+                    ERROR_CODE_GETTING_USER_STORE_MANAGER, null, e);
+        }
+
+        Event identityMgtEvent = new Event(eventName, properties);
+        try {
+            IdentityRecoveryServiceDataHolder.getInstance().getIdentityEventService().handleEvent(identityMgtEvent);
+        } catch (IdentityEventClientException e) {
+            throw new IdentityRecoveryClientException(e.getErrorCode(), e.getMessage(), e);
+        } catch (IdentityEventServerException e) {
+            throw new IdentityRecoveryServerException(e.getErrorCode(), e.getMessage(), e);
+        } catch (IdentityEventException e) {
+            throw Utils.handleServerException(IdentityRecoveryConstants.ErrorMessages.
+                    ERROR_CODE_TRIGGER_PRE_SET_CHALLENGE_ANSWER, user.getUserName(), e);
         }
     }
 

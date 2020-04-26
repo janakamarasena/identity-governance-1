@@ -267,7 +267,17 @@ public class IdentityRecoveryConstants {
                 + "password reset"),
 
         // Resend Account Confirmation.
-        ERROR_CODE_USER_OBJECT_NOT_FOUND("PWR-60001", "User object not found in the request");
+        ERROR_CODE_USER_OBJECT_NOT_FOUND("PWR-60001", "User object not found in the request"),
+
+        // CQM - Challenge Question Manager.
+        ERROR_CODE_INVALID_ANSWER_FORMAT("CQM-10016", "Invalid Answer Format."),
+        ERROR_CODE_NOT_UNIQUE_ANSWER("CQM-10017", "The given challenge question answer has been " +
+                "used more than once."),
+        ERROR_CODE_TRIGGER_PRE_SET_CHALLENGE_ANSWER("CQM-15001", "Error while trigger pre set " +
+                "challenge question answers for user '%s.'"),
+        ERROR_CODE_HASH_CHALLENGE_ANSWER("CQM-15002", "Error while hashing the challenge answer.'"),
+        ERROR_CODE_GETTING_CLAIM_VALUES("CQM-15003", "Error while getting the claim values of user '%s."),
+        ERROR_CODE_GETTING_USER_STORE_MANAGER("CQM-15003", "Error while getting user store manager.");
 
         private final String code;
         private final String message;
@@ -420,6 +430,8 @@ public class IdentityRecoveryConstants {
         public static final String PASSWORD_RECOVERY_RECAPTCHA_ENABLE = "Recovery.ReCaptcha.Password.Enable";
         public static final String USERNAME_RECOVERY_RECAPTCHA_ENABLE = "Recovery.ReCaptcha.Username.Enable";
 
+        public static final String CHALLENGE_QUESTION_ANSWER_REGEX = "Recovery.ChallengeQuestion.AnswerRegex";
+        public static final String CHALLENGE_QUESTION_ANSWER_UNIQUENESS = "Recovery.ChallengeQuestion.AnswerUniqueness";
     }
 
     public static class SQLQueries {

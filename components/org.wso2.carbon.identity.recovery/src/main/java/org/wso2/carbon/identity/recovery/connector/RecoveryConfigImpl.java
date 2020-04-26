@@ -93,6 +93,10 @@ public class RecoveryConfigImpl implements IdentityConnectorConfig {
                 "challenge questions");
         nameMapping.put(IdentityRecoveryConstants.ConnectorConfig.RECOVERY_CALLBACK_REGEX,
                 "Recovery callback URL regex");
+        nameMapping.put(IdentityRecoveryConstants.ConnectorConfig.CHALLENGE_QUESTION_ANSWER_REGEX,
+                "Challenge question answer regex");
+        nameMapping.put(IdentityRecoveryConstants.ConnectorConfig.CHALLENGE_QUESTION_ANSWER_UNIQUENESS,
+                "Enable validating the challenge question answer uniqueness");
         return nameMapping;
     }
 
@@ -109,6 +113,10 @@ public class RecoveryConfigImpl implements IdentityConnectorConfig {
                 "Recovery callback URL regex");
         descriptionMapping.put(IdentityRecoveryConstants.ConnectorConfig.PASSWORD_RECOVERY_SMS_OTP_EXPIRY_TIME,
                 "Expiration time of the SMS OTP code for password recovery");
+        descriptionMapping.put(IdentityRecoveryConstants.ConnectorConfig.CHALLENGE_QUESTION_ANSWER_REGEX,
+                "Recovery callback URL regex");
+        descriptionMapping.put(IdentityRecoveryConstants.ConnectorConfig.CHALLENGE_QUESTION_ANSWER_UNIQUENESS,
+                "Enable validating the challenge question answer uniqueness");
         return descriptionMapping;
     }
 
@@ -131,6 +139,8 @@ public class RecoveryConfigImpl implements IdentityConnectorConfig {
         properties.add(IdentityRecoveryConstants.ConnectorConfig.PASSWORD_RECOVERY_SMS_OTP_EXPIRY_TIME);
         properties.add(IdentityRecoveryConstants.ConnectorConfig.FORCE_ADD_PW_RECOVERY_QUESTION);
         properties.add(IdentityRecoveryConstants.ConnectorConfig.RECOVERY_CALLBACK_REGEX);
+        properties.add(IdentityRecoveryConstants.ConnectorConfig.CHALLENGE_QUESTION_ANSWER_REGEX);
+        properties.add(IdentityRecoveryConstants.ConnectorConfig.CHALLENGE_QUESTION_ANSWER_UNIQUENESS);
         return properties.toArray(new String[0]);
     }
 
@@ -152,6 +162,8 @@ public class RecoveryConfigImpl implements IdentityConnectorConfig {
         String enablePasswordRecoveryReCaptcha = "false";
         String enableUsernameRecoveryReCaptcha = "false";
         String recoveryCallbackRegex = IdentityRecoveryConstants.DEFAULT_CALLBACK_REGEX;
+        String challengeQuestionAnswerRegex = IdentityRecoveryConstants.DEFAULT_CALLBACK_REGEX;
+        String challengeQuestionAnswerUniqueness = "false";
 
         String notificationBasedPasswordRecovery = IdentityUtil.getProperty(
                 IdentityRecoveryConstants.ConnectorConfig.NOTIFICATION_BASED_PW_RECOVERY);
@@ -182,6 +194,10 @@ public class RecoveryConfigImpl implements IdentityConnectorConfig {
                 USERNAME_RECOVERY_RECAPTCHA_ENABLE);
         String recoveryCallbackRegexProperty = IdentityUtil.getProperty(
                 IdentityRecoveryConstants.ConnectorConfig.RECOVERY_CALLBACK_REGEX);
+        String challengeQuestionAnswerRegexProperty = IdentityUtil.getProperty(
+                IdentityRecoveryConstants.ConnectorConfig.CHALLENGE_QUESTION_ANSWER_REGEX);
+        String challengeQuestionAnswerUniquenessProperty = IdentityUtil.getProperty(
+                IdentityRecoveryConstants.ConnectorConfig.CHALLENGE_QUESTION_ANSWER_UNIQUENESS);
 
         if (StringUtils.isNotEmpty(expiryTimeSMSOTPProperty)) {
             expiryTimeSMSOTP = expiryTimeSMSOTPProperty;
@@ -228,6 +244,12 @@ public class RecoveryConfigImpl implements IdentityConnectorConfig {
         if (StringUtils.isNotEmpty(recoveryCallbackRegexProperty)) {
             recoveryCallbackRegex = recoveryCallbackRegexProperty;
         }
+        if (StringUtils.isNotEmpty(challengeQuestionAnswerRegexProperty)) {
+            challengeQuestionAnswerRegex = challengeQuestionAnswerRegexProperty;
+        }
+        if (StringUtils.isNotEmpty(challengeQuestionAnswerUniquenessProperty)) {
+            challengeQuestionAnswerUniqueness = challengeQuestionAnswerUniquenessProperty;
+        }
 
         Map<String, String> defaultProperties = new HashMap<>();
         defaultProperties.put(IdentityRecoveryConstants.ConnectorConfig.NOTIFICATION_BASED_PW_RECOVERY,
@@ -259,6 +281,10 @@ public class RecoveryConfigImpl implements IdentityConnectorConfig {
         defaultProperties.put(IdentityRecoveryConstants.ConnectorConfig.FORCE_ADD_PW_RECOVERY_QUESTION,
                 enableForceChallengeQuestions);
         defaultProperties.put(IdentityRecoveryConstants.ConnectorConfig.RECOVERY_CALLBACK_REGEX, recoveryCallbackRegex);
+        defaultProperties.put(IdentityRecoveryConstants.ConnectorConfig.CHALLENGE_QUESTION_ANSWER_REGEX,
+                challengeQuestionAnswerRegex);
+        defaultProperties.put(IdentityRecoveryConstants.ConnectorConfig.CHALLENGE_QUESTION_ANSWER_UNIQUENESS,
+                challengeQuestionAnswerUniqueness);
 
         Properties properties = new Properties();
         properties.putAll(defaultProperties);
