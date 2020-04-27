@@ -19,10 +19,12 @@
 package org.wso2.carbon.identity.recovery.handler;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.common.model.User;
 import org.wso2.carbon.identity.core.bean.context.MessageContext;
+import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventClientException;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
@@ -45,6 +47,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * This class is used to validate the challenge question answers.
+ */
 public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
 
     private static final Log log = LogFactory.getLog(ChallengeAnswerValidationHandler.class);
@@ -63,19 +68,16 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
 
         String eventName = event.getEventName();
         Map<String, Object> eventProperties = event.getEventProperties();
-        String userName = (String) eventProperties.get(IdentityEventConstants.EventProperty.USER_NAME);
         UserStoreManager userStoreManager = (UserStoreManager) eventProperties.
                 get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER);
-        String tenantDomain = (String) eventProperties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN);
-        String domainName = userStoreManager.getRealmConfiguration().
-                getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME);
         UserChallengeAnswer[] userChallengeAnswers = (UserChallengeAnswer[]) eventProperties.
                 get(IdentityEventConstants.EventProperty.USER_CHALLENGE_ANSWERS);
 
         User user = new User();
-        user.setUserName(userName);
-        user.setTenantDomain(tenantDomain);
-        user.setUserStoreDomain(domainName);
+        user.setUserName((String) eventProperties.get(IdentityEventConstants.EventProperty.USER_NAME));
+        user.setTenantDomain((String) eventProperties.get(IdentityEventConstants.EventProperty.TENANT_DOMAIN));
+        user.setUserStoreDomain(userStoreManager.getRealmConfiguration().
+                getUserStoreProperty(UserCoreConstants.RealmConfig.PROPERTY_DOMAIN_NAME));
 
         if (IdentityEventConstants.Event.PRE_SET_CHALLENGE_QUESTION_ANSWERS.equals(eventName)) {
             try {
@@ -100,25 +102,24 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
                 existingChallengeAnswers);
         validateChallengeQuestionAnswer(user.getTenantDomain(), newChallengeAnswers);
         if (Boolean.parseBoolean(Utils.getConnectorConfig(IdentityRecoveryConstants.ConnectorConfig.
-                CHALLENGE_QUESTION_ANSWER_UNIQUENESS, user.getTenantDomain()))){
-            if (!validateUniquenessOfAnswer(newChallengeAnswers, existingChallengeAnswers)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("The challenge question answer is not unique. " +
-                            "The given challenge question answer has been used more than once");
-                }
-                throw Utils.handleClientException (
-                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_NOT_UNIQUE_ANSWER, null);
-            }
+                CHALLENGE_QUESTION_ANSWER_UNIQUENESS_ENABLE, user.getTenantDomain()))) {
+            validateUniquenessOfAnswer(newChallengeAnswers, existingChallengeAnswers);
         }
     }
 
     private void postSetChallengeQuestionAnswers(User user, UserChallengeAnswer[] userChallengeAnswers) {
+        // This method is not implemented.
     }
 
     /**
      * Filter existing hashed challenge question answers from user added challenge question answers.
+     *
+     * @param user                 User
+     * @param userChallengeAnswers Array of all user challenge answers
+     * @return Array of existing user challenge answers
+     * @throws IdentityRecoveryServerException Error while getting the claim values.
      */
-    private UserChallengeAnswer[] getExistingChallengeAnswers (User user, UserChallengeAnswer[] userChallengeAnswers)
+    private UserChallengeAnswer[] getExistingChallengeAnswers(User user, UserChallengeAnswer[] userChallengeAnswers)
             throws IdentityRecoveryServerException {
 
         List<UserChallengeAnswer> existingChallengeAnswers = new ArrayList<>();
@@ -128,14 +129,13 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
                         userChallengeAnswer.getQuestion().getQuestion() != null &&
                         userChallengeAnswer.getAnswer() != null) {
                     try {
-                        String oldValue = Utils.
-                                getClaimFromUserStoreManager(user, userChallengeAnswer.getQuestion().
-                                        getQuestionSetId().trim());
-                        if (oldValue != null && oldValue.
-                                contains(IdentityRecoveryConstants.DEFAULT_CHALLENGE_QUESTION_SEPARATOR)) {
-                            String oldAnswer = oldValue.
-                                    split(IdentityRecoveryConstants.DEFAULT_CHALLENGE_QUESTION_SEPARATOR)[1];
-                            if (oldAnswer.trim().equals(userChallengeAnswer.getAnswer().trim())) {
+                        String previousValue = Utils.getClaimFromUserStoreManager(user, userChallengeAnswer.getQuestion().
+                                getQuestionSetId().trim());
+                        String separator = IdentityUtil.getProperty(IdentityRecoveryConstants.ConnectorConfig
+                                .QUESTION_CHALLENGE_SEPARATOR);
+                        if (StringUtils.isNotBlank(previousValue) && previousValue.contains(separator)) {
+                            String previousAnswer = previousValue.split(separator)[1];
+                            if (previousAnswer.trim().equals(userChallengeAnswer.getAnswer().trim())) {
                                 existingChallengeAnswers.add(userChallengeAnswer);
                             }
                         }
@@ -152,9 +152,13 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
 
     /**
      * Filter new challenge question answers in plain text from user added challenge question answers.
+     *
+     * @param userChallengeAnswers     Array of all challenge answers
+     * @param existingChallengeAnswers Array of existing stored challenge answers
+     * @return Array of newly added challenge answers.
      */
-    private UserChallengeAnswer[] getNewChallengeAnswers (UserChallengeAnswer[] userChallengeAnswers,
-                                                          UserChallengeAnswer[] existingChallengeAnswers) {
+    private UserChallengeAnswer[] getNewChallengeAnswers(UserChallengeAnswer[] userChallengeAnswers,
+                                                         UserChallengeAnswer[] existingChallengeAnswers) {
 
         List<UserChallengeAnswer> challengeAnswers =
                 new ArrayList<>(Arrays.asList(userChallengeAnswers));
@@ -174,9 +178,14 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
 
     /**
      * Validate challenge question answers according to configured regex pattern.
+     *
+     * @param tenantDomain        Tenant Domain
+     * @param newChallengeAnswers Newly added challenge question answers
+     * @throws IdentityEventException          Error while reading the configurations
+     * @throws IdentityRecoveryClientException Error while validating the answer regex.
      */
     private void validateChallengeQuestionAnswer(String tenantDomain, UserChallengeAnswer[] newChallengeAnswers)
-            throws IdentityEventException, IdentityRecoveryClientException {
+            throws IdentityRecoveryClientException, IdentityEventException {
 
         for (UserChallengeAnswer userChallengeAnswer : newChallengeAnswers) {
             if (userChallengeAnswer.getAnswer().trim().
@@ -190,39 +199,47 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
                     log.debug("The challenge question answer is not in the expected format. " +
                             "The answer should only contain the alphanumeric characters");
                 }
-                throw Utils.handleClientException (
-                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_INVALID_ANSWER_FORMAT, null);
+                throw Utils.handleClientException(
+                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_INVALID_ANSWER_FORMAT,
+                        userChallengeAnswer.getAnswer());
             }
         }
     }
 
     /**
      * Validate the uniqueness of a given answer.
+     *
+     * @param newChallengeAnswers      Newly added challenge question answers
+     * @param existingChallengeAnswers Existing challenge question answers
+     * @throws IdentityRecoveryServerException Error while hashing the newly added answers
+     * @throws IdentityRecoveryClientException Error while validating the answer uniqueness.
      */
-    private boolean validateUniquenessOfAnswer(UserChallengeAnswer[] newChallengeAnswers,
-                                               UserChallengeAnswer[] existingChallengeAnswers)
-            throws IdentityRecoveryServerException {
+    private void validateUniquenessOfAnswer(UserChallengeAnswer[] newChallengeAnswers,
+                                            UserChallengeAnswer[] existingChallengeAnswers)
+            throws IdentityRecoveryServerException, IdentityRecoveryClientException {
 
-        List<String> hashedChallengeAnswers = new ArrayList<>();
+        Set<String> uniqueChallengeAnswerHashSet = new HashSet<>();
+        for (UserChallengeAnswer existingChallengeAnswer : existingChallengeAnswers) {
+            uniqueChallengeAnswerHashSet.add(existingChallengeAnswer.getAnswer().trim());
+        }
+
+        String hashedNewChallengeAnswer;
         for (UserChallengeAnswer userChallengeAnswer : newChallengeAnswers) {
             try {
-                hashedChallengeAnswers.add(Utils.doHash(userChallengeAnswer.getAnswer().trim().toLowerCase()));
+                hashedNewChallengeAnswer = Utils.doHash(userChallengeAnswer.getAnswer().trim().toLowerCase());
             } catch (UserStoreException e) {
                 throw Utils.handleServerException(
                         IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_HASH_CHALLENGE_ANSWER, null);
             }
+            if (!uniqueChallengeAnswerHashSet.add(hashedNewChallengeAnswer)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("The challenge question answer is not unique. " +
+                            "The given challenge question answer has been used more than once");
+                }
+                throw Utils.handleClientException(
+                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_NOT_UNIQUE_ANSWER,
+                        userChallengeAnswer.getAnswer());
+            }
         }
-        for (UserChallengeAnswer existingChallengeAnswer : existingChallengeAnswers) {
-            hashedChallengeAnswers.add(existingChallengeAnswer.getAnswer().trim());
-        }
-
-        Set<String> uniqueChallengeAnswerHashSet = new HashSet<>();
-        for (String userChallengeAnswer : hashedChallengeAnswers) {
-            uniqueChallengeAnswerHashSet.add(userChallengeAnswer.trim());
-        }
-
-        // If all elements are distinct, size of the uniqueChallengeAnswerHashSet should be same to the summation
-        // of the lengths of newChallengeAnswers array and existingChallengeAnswers array.
-        return (uniqueChallengeAnswerHashSet.size() == (newChallengeAnswers.length + existingChallengeAnswers.length));
     }
 }

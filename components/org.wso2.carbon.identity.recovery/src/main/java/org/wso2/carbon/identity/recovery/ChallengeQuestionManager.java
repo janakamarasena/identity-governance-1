@@ -548,8 +548,8 @@ public class ChallengeQuestionManager {
     public void setChallengesOfUser(User user, UserChallengeAnswer[] userChallengeAnswers) throws IdentityRecoveryException {
 
         validateUser(user);
-        String preSetChallengeAnswerValidationEvent = IdentityEventConstants.Event.PRE_SET_CHALLENGE_QUESTION_ANSWERS;
-        triggerChallengeAnswersValidation(user, userChallengeAnswers, preSetChallengeAnswerValidationEvent);
+        triggerChallengeAnswersValidation(user, userChallengeAnswers, IdentityEventConstants.
+                Event.PRE_SET_CHALLENGE_QUESTION_ANSWERS);
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Setting user challenge question answers in %s's profile.", user.toString()));
@@ -612,6 +612,12 @@ public class ChallengeQuestionManager {
 
     /**
      * Trigger challenge question answers validation according to the given event name.
+     *
+     * @param user                 User
+     * @param userChallengeAnswers Array of challenge answers
+     * @param eventName            Event name
+     * @throws IdentityRecoveryClientException Error while validating the challenge answers
+     * @throws IdentityRecoveryServerException Error while getting the user store manager or triggering the event.
      */
     private void triggerChallengeAnswersValidation(User user, UserChallengeAnswer[] userChallengeAnswers,
                                                    String eventName)
@@ -625,7 +631,7 @@ public class ChallengeQuestionManager {
 
         try {
             UserStoreManager userStoreManager;
-            if(IdentityUtil.getPrimaryDomainName().equals(user.getUserStoreDomain())) {
+            if (IdentityUtil.getPrimaryDomainName().equals(user.getUserStoreDomain())) {
                 userStoreManager = (UserStoreManager) CarbonContext.getThreadLocalCarbonContext().getUserRealm()
                         .getUserStoreManager();
             } else {
@@ -647,7 +653,7 @@ public class ChallengeQuestionManager {
             throw new IdentityRecoveryServerException(e.getErrorCode(), e.getMessage(), e);
         } catch (IdentityEventException e) {
             throw Utils.handleServerException(IdentityRecoveryConstants.ErrorMessages.
-                    ERROR_CODE_TRIGGER_PRE_SET_CHALLENGE_ANSWER, user.getUserName(), e);
+                    ERROR_CODE_TRIGGER_CHALLENGE_ANSWER_VALIDATION_EVENT, user.getUserName(), e);
         }
     }
 
