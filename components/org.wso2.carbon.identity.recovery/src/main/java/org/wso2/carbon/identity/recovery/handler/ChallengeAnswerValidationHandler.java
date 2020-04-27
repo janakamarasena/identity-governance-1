@@ -102,7 +102,7 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
                 existingChallengeAnswers);
         validateChallengeQuestionAnswer(user.getTenantDomain(), newChallengeAnswers);
         if (Boolean.parseBoolean(Utils.getConnectorConfig(IdentityRecoveryConstants.ConnectorConfig.
-                CHALLENGE_QUESTION_ANSWER_UNIQUENESS_ENABLE, user.getTenantDomain()))) {
+                ENABLE_CHALLENGE_QUESTION_ANSWER_UNIQUENESS, user.getTenantDomain()))) {
             validateUniquenessOfAnswer(newChallengeAnswers, existingChallengeAnswers);
         }
     }
@@ -129,8 +129,8 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
                         userChallengeAnswer.getQuestion().getQuestion() != null &&
                         userChallengeAnswer.getAnswer() != null) {
                     try {
-                        String previousValue = Utils.getClaimFromUserStoreManager(user, userChallengeAnswer.getQuestion().
-                                getQuestionSetId().trim());
+                        String previousValue = Utils.getClaimFromUserStoreManager(user,
+                                userChallengeAnswer.getQuestion().getQuestionSetId().trim());
                         String separator = IdentityUtil.getProperty(IdentityRecoveryConstants.ConnectorConfig
                                 .QUESTION_CHALLENGE_SEPARATOR);
                         if (StringUtils.isNotBlank(previousValue) && previousValue.contains(separator)) {
@@ -192,12 +192,12 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
                     matches(Utils.getConnectorConfig(IdentityRecoveryConstants.ConnectorConfig.
                             CHALLENGE_QUESTION_ANSWER_REGEX, tenantDomain))) {
                 if (log.isDebugEnabled()) {
-                    log.debug("The challenge question answer is in the expected format");
+                    log.debug("The challenge question answer is in the expected format.");
                 }
             } else {
                 if (log.isDebugEnabled()) {
                     log.debug("The challenge question answer is not in the expected format. " +
-                            "The answer should only contain the alphanumeric characters");
+                            "The answer should only contain the alphanumeric characters.");
                 }
                 throw Utils.handleClientException(
                         IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_INVALID_ANSWER_FORMAT,
@@ -234,7 +234,7 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
             if (!uniqueChallengeAnswerHashSet.add(hashedNewChallengeAnswer)) {
                 if (log.isDebugEnabled()) {
                     log.debug("The challenge question answer is not unique. " +
-                            "The given challenge question answer has been used more than once");
+                            "The given challenge question answer has been used more than once.");
                 }
                 throw Utils.handleClientException(
                         IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_NOT_UNIQUE_ANSWER,

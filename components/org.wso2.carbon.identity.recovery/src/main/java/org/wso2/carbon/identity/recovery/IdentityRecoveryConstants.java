@@ -431,8 +431,8 @@ public class IdentityRecoveryConstants {
         public static final String USERNAME_RECOVERY_RECAPTCHA_ENABLE = "Recovery.ReCaptcha.Username.Enable";
 
         public static final String CHALLENGE_QUESTION_ANSWER_REGEX = "Recovery.ChallengeQuestion.AnswerRegex";
-        public static final String CHALLENGE_QUESTION_ANSWER_UNIQUENESS_ENABLE = "Recovery.ChallengeQuestion" +
-                ".AnswerUniqueness.Enable";
+        public static final String ENABLE_CHALLENGE_QUESTION_ANSWER_UNIQUENESS = "Recovery.ChallengeQuestion" +
+                ".EnableAnswerUniqueness";
     }
 
     public static class SQLQueries {

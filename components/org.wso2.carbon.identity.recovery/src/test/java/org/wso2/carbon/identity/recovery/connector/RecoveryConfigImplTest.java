@@ -109,7 +109,7 @@ public class RecoveryConfigImplTest {
                 "Recovery callback URL regex");
         nameMappingExpected.put(IdentityRecoveryConstants.ConnectorConfig.CHALLENGE_QUESTION_ANSWER_REGEX,
                 "Challenge question answer regex");
-        nameMappingExpected.put(IdentityRecoveryConstants.ConnectorConfig.CHALLENGE_QUESTION_ANSWER_UNIQUENESS_ENABLE,
+        nameMappingExpected.put(IdentityRecoveryConstants.ConnectorConfig.ENABLE_CHALLENGE_QUESTION_ANSWER_UNIQUENESS,
                 "Enable challenge question answer uniqueness check");
 
         Map<String, String> nameMapping = recoveryConfigImpl.getPropertyNameMapping();
@@ -134,7 +134,7 @@ public class RecoveryConfigImplTest {
         descriptionMappingExpected.put(IdentityRecoveryConstants.ConnectorConfig.CHALLENGE_QUESTION_ANSWER_REGEX,
                 "Recovery callback URL regex");
         descriptionMappingExpected.put(IdentityRecoveryConstants.ConnectorConfig.
-                CHALLENGE_QUESTION_ANSWER_UNIQUENESS_ENABLE, "Enable challenge question answer uniqueness check");
+                ENABLE_CHALLENGE_QUESTION_ANSWER_UNIQUENESS, "Enable challenge question answer uniqueness check");
         Map<String, String> descriptionMapping = recoveryConfigImpl.getPropertyDescriptionMapping();
 
         assertEquals(descriptionMapping, descriptionMappingExpected, "Maps are not equal");
@@ -224,7 +224,7 @@ public class RecoveryConfigImplTest {
         defaultPropertiesExpected.put(IdentityRecoveryConstants.ConnectorConfig.CHALLENGE_QUESTION_ANSWER_REGEX,
                 challengeQuestionAnswerRegex);
         defaultPropertiesExpected.put(IdentityRecoveryConstants.ConnectorConfig.
-                CHALLENGE_QUESTION_ANSWER_UNIQUENESS_ENABLE, enableChallengeQuestionAnswerUniqueness);
+                ENABLE_CHALLENGE_QUESTION_ANSWER_UNIQUENESS, enableChallengeQuestionAnswerUniqueness);
 
         String tenantDomain = "admin";
         // Here tenantDomain parameter is not used by method itself
