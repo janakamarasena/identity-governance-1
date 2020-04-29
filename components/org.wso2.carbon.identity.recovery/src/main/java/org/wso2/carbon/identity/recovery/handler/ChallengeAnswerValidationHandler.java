@@ -72,6 +72,8 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
                 get(IdentityEventConstants.EventProperty.USER_STORE_MANAGER);
         UserChallengeAnswer[] userChallengeAnswers = (UserChallengeAnswer[]) eventProperties.
                 get(IdentityEventConstants.EventProperty.USER_CHALLENGE_ANSWERS);
+        Map<String, String> existingQuestionAndAnswers = (Map<String, String>)
+                eventProperties.get(IdentityEventConstants.EventProperty.USER_OLD_CHALLENGE_ANSWERS);
 
         User user = new User();
         user.setUserName((String) eventProperties.get(IdentityEventConstants.EventProperty.USER_NAME));
@@ -81,99 +83,87 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
 
         if (IdentityEventConstants.Event.PRE_SET_CHALLENGE_QUESTION_ANSWERS.equals(eventName)) {
             try {
-                preSetChallengeQuestionAnswers(user, userChallengeAnswers);
+                preSetChallengeQuestionAnswers(user, userChallengeAnswers, existingQuestionAndAnswers);
             } catch (IdentityRecoveryClientException e) {
                 throw new IdentityEventClientException(e.getErrorCode(), e.getMessage(), e);
             } catch (IdentityRecoveryServerException e) {
                 throw new IdentityEventServerException(e.getErrorCode(), e.getMessage(), e);
             }
         }
-
-        if (IdentityEventConstants.Event.POST_SET_CHALLENGE_QUESTION_ANSWERS.equals(eventName)) {
-            postSetChallengeQuestionAnswers(user, userChallengeAnswers);
-        }
     }
 
-    private void preSetChallengeQuestionAnswers(User user, UserChallengeAnswer[] userChallengeAnswers)
+    private void preSetChallengeQuestionAnswers(User user, UserChallengeAnswer[] userChallengeAnswers,
+                                                Map<String, String> existingQuestionAndAnswers)
             throws IdentityEventException, IdentityRecoveryClientException, IdentityRecoveryServerException {
 
-        UserChallengeAnswer[] existingChallengeAnswers = getExistingChallengeAnswers(user, userChallengeAnswers);
-        UserChallengeAnswer[] newChallengeAnswers = getNewChallengeAnswers(userChallengeAnswers,
+        List<String> existingChallengeAnswers = getExistingChallengeAnswers(userChallengeAnswers,
+                existingQuestionAndAnswers);
+        List<UserChallengeAnswer> newChallengeAnswers = getNewChallengeAnswers(userChallengeAnswers,
                 existingChallengeAnswers);
         validateChallengeQuestionAnswer(user.getTenantDomain(), newChallengeAnswers);
         if (Boolean.parseBoolean(Utils.getConnectorConfig(IdentityRecoveryConstants.ConnectorConfig.
-                ENABLE_CHALLENGE_QUESTION_ANSWER_UNIQUENESS, user.getTenantDomain()))) {
+                ENFORCE_CHALLENGE_QUESTION_ANSWER_UNIQUENESS, user.getTenantDomain()))) {
             validateUniquenessOfAnswer(newChallengeAnswers, existingChallengeAnswers);
         }
     }
 
-    private void postSetChallengeQuestionAnswers(User user, UserChallengeAnswer[] userChallengeAnswers) {
-        // This method is not implemented.
-    }
-
     /**
-     * Filter existing hashed challenge question answers from user added challenge question answers.
+     * Get the existing answers for the challenge questions.
      *
-     * @param user                 User
-     * @param userChallengeAnswers Array of all user challenge answers
-     * @return Array of existing user challenge answers
-     * @throws IdentityRecoveryServerException Error while getting the claim values.
+     * @param userChallengeAnswers       List of UserChallengeAnswer objects.
+     * @param existingQuestionAndAnswers Map of existing challenge question and answers.
+     * @return Existing challenge questions and answers.
      */
-    private UserChallengeAnswer[] getExistingChallengeAnswers(User user, UserChallengeAnswer[] userChallengeAnswers)
-            throws IdentityRecoveryServerException {
+    private List<String> getExistingChallengeAnswers(UserChallengeAnswer[] userChallengeAnswers,
+                                                     Map<String, String> existingQuestionAndAnswers) {
 
-        List<UserChallengeAnswer> existingChallengeAnswers = new ArrayList<>();
+        List<String> existingChallengeAnswers = new ArrayList<>();
+        String separator = IdentityUtil.getProperty(IdentityRecoveryConstants.ConnectorConfig
+                .QUESTION_CHALLENGE_SEPARATOR);
         if (!ArrayUtils.isEmpty(userChallengeAnswers)) {
             for (UserChallengeAnswer userChallengeAnswer : userChallengeAnswers) {
+
                 if (userChallengeAnswer.getQuestion().getQuestionSetId() != null &&
-                        userChallengeAnswer.getQuestion().getQuestion() != null &&
-                        userChallengeAnswer.getAnswer() != null) {
-                    try {
-                        String previousValue = Utils.getClaimFromUserStoreManager(user,
-                                userChallengeAnswer.getQuestion().getQuestionSetId().trim());
-                        String separator = IdentityUtil.getProperty(IdentityRecoveryConstants.ConnectorConfig
-                                .QUESTION_CHALLENGE_SEPARATOR);
-                        if (StringUtils.isNotBlank(previousValue) && previousValue.contains(separator)) {
-                            String previousAnswer = previousValue.split(separator)[1];
-                            if (previousAnswer.trim().equals(userChallengeAnswer.getAnswer().trim())) {
-                                existingChallengeAnswers.add(userChallengeAnswer);
-                            }
+                        userChallengeAnswer.getQuestion().getQuestion() !=
+                                null && userChallengeAnswer.getAnswer() != null) {
+
+                    String oldValue = existingQuestionAndAnswers
+                            .get(userChallengeAnswer.getQuestion().getQuestionSetId().trim());
+
+                    if (StringUtils.isNotBlank(oldValue) && oldValue.contains(separator)) {
+                        String oldAnswer = oldValue.split(separator)[1];
+                        if (oldAnswer.trim().equals(userChallengeAnswer.getAnswer().trim())) {
+                            existingChallengeAnswers.add(userChallengeAnswer.getAnswer().trim());
                         }
-                    } catch (org.wso2.carbon.user.api.UserStoreException e) {
-                        throw Utils.handleServerException(IdentityRecoveryConstants.ErrorMessages.
-                                ERROR_CODE_GETTING_CLAIM_VALUES, user.getUserName(), e);
                     }
                 }
             }
         }
-        UserChallengeAnswer[] existingAnswers = new UserChallengeAnswer[existingChallengeAnswers.size()];
-        return existingChallengeAnswers.toArray(existingAnswers);
+        return existingChallengeAnswers;
     }
 
     /**
-     * Filter new challenge question answers in plain text from user added challenge question answers.
+     * Get the new answers for the challenge questions.
      *
-     * @param userChallengeAnswers     Array of all challenge answers
-     * @param existingChallengeAnswers Array of existing stored challenge answers
-     * @return Array of newly added challenge answers.
+     * @param userChallengeAnswers       List of UserChallengeAnswer objects.
+     * @param existingQuestionAndAnswers Map of existing challenge question and answers.
+     * @return Existing challenge questions and answers.
      */
-    private UserChallengeAnswer[] getNewChallengeAnswers(UserChallengeAnswer[] userChallengeAnswers,
-                                                         UserChallengeAnswer[] existingChallengeAnswers) {
+    private List<UserChallengeAnswer> getNewChallengeAnswers(UserChallengeAnswer[] userChallengeAnswers,
+                                                             List<String> existingQuestionAndAnswers) {
 
-        List<UserChallengeAnswer> challengeAnswers =
-                new ArrayList<>(Arrays.asList(userChallengeAnswers));
-        List<UserChallengeAnswer> oldChallengeAnswers =
-                new ArrayList<>(Arrays.asList(existingChallengeAnswers));
+        List<UserChallengeAnswer> challengeAnswers = new ArrayList<>(Arrays.asList(userChallengeAnswers));
+        List<String> existingChallengeAnswers = new ArrayList<>(existingQuestionAndAnswers);
+
         List<UserChallengeAnswer> newChallengeAnswers = new ArrayList<>(challengeAnswers);
         for (UserChallengeAnswer userChallengeAnswer : challengeAnswers) {
-            for (UserChallengeAnswer oldUserChallengeAnswer : oldChallengeAnswers) {
-                if (userChallengeAnswer.getAnswer().trim().equals(oldUserChallengeAnswer.getAnswer().trim())) {
+            for (String existingChallengeAnswer : existingChallengeAnswers) {
+                if (userChallengeAnswer.getAnswer().trim().equals(existingChallengeAnswer)) {
                     newChallengeAnswers.remove(userChallengeAnswer);
                 }
             }
         }
-        UserChallengeAnswer[] newAnswers = new UserChallengeAnswer[newChallengeAnswers.size()];
-        return newChallengeAnswers.toArray(newAnswers);
+        return newChallengeAnswers;
     }
 
     /**
@@ -184,15 +174,15 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
      * @throws IdentityEventException          Error while reading the configurations
      * @throws IdentityRecoveryClientException Error while validating the answer regex.
      */
-    private void validateChallengeQuestionAnswer(String tenantDomain, UserChallengeAnswer[] newChallengeAnswers)
+    private void validateChallengeQuestionAnswer(String tenantDomain,
+                                                 List<UserChallengeAnswer> newChallengeAnswers)
             throws IdentityRecoveryClientException, IdentityEventException {
 
         for (UserChallengeAnswer userChallengeAnswer : newChallengeAnswers) {
-            if (userChallengeAnswer.getAnswer().trim().
-                    matches(Utils.getConnectorConfig(IdentityRecoveryConstants.ConnectorConfig.
-                            CHALLENGE_QUESTION_ANSWER_REGEX, tenantDomain))) {
+            if ((userChallengeAnswer.getAnswer()).matches(Utils.getConnectorConfig(IdentityRecoveryConstants.
+                    ConnectorConfig.CHALLENGE_QUESTION_ANSWER_REGEX, tenantDomain))) {
                 if (log.isDebugEnabled()) {
-                    log.debug("The challenge question answer is in the expected format.");
+                    log.debug("The challenge question answer: '%s' is in the expected format.");
                 }
             } else {
                 if (log.isDebugEnabled()) {
@@ -214,14 +204,11 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
      * @throws IdentityRecoveryServerException Error while hashing the newly added answers
      * @throws IdentityRecoveryClientException Error while validating the answer uniqueness.
      */
-    private void validateUniquenessOfAnswer(UserChallengeAnswer[] newChallengeAnswers,
-                                            UserChallengeAnswer[] existingChallengeAnswers)
+    private void validateUniquenessOfAnswer(List<UserChallengeAnswer> newChallengeAnswers,
+                                            List<String> existingChallengeAnswers)
             throws IdentityRecoveryServerException, IdentityRecoveryClientException {
 
-        Set<String> uniqueChallengeAnswerHashSet = new HashSet<>();
-        for (UserChallengeAnswer existingChallengeAnswer : existingChallengeAnswers) {
-            uniqueChallengeAnswerHashSet.add(existingChallengeAnswer.getAnswer().trim());
-        }
+        Set<String> uniqueChallengeAnswerHashSet = new HashSet<>(existingChallengeAnswers);
 
         String hashedNewChallengeAnswer;
         for (UserChallengeAnswer userChallengeAnswer : newChallengeAnswers) {
@@ -236,8 +223,7 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
                     log.debug("The challenge question answer is not unique. " +
                             "The given challenge question answer has been used more than once.");
                 }
-                throw Utils.handleClientException(
-                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_NOT_UNIQUE_ANSWER,
+                throw Utils.handleClientException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_NOT_UNIQUE_ANSWER,
                         userChallengeAnswer.getAnswer());
             }
         }

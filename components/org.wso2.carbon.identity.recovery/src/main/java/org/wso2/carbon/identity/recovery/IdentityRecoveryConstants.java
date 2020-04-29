@@ -27,6 +27,7 @@ public class IdentityRecoveryConstants {
     public static final String IDENTITY_I18N_QUESTIONS =
             IDENTITY_MANAGEMENT_I18N_PATH + "/questionCollection";
     public static final String LINE_SEPARATOR = "!";
+    public static final String DEFAULT_REGEX = ".*";
     public static final String CHALLENGE_QUESTION_URI = "http://wso2.org/claims/challengeQuestionUris";
     public static final String NOTIFICATION_TYPE_PASSWORD_RESET = "passwordreset";
     public static final String NOTIFICATION_TYPE_RESEND_PASSWORD_RESET = "resendPasswordReset";
@@ -271,13 +272,21 @@ public class IdentityRecoveryConstants {
 
         // CQM - Challenge Question Manager.
         ERROR_CODE_INVALID_ANSWER_FORMAT("CQM-10016", "Invalid answer format in the given answer '%s'."),
-        ERROR_CODE_NOT_UNIQUE_ANSWER("CQM-10017", "The given challenge question answer: '%s' has been " +
+        ERROR_CODE_NOT_UNIQUE_ANSWER("CQM-10017", "The given challenge question answer, '%s' has been " +
                 "used more than once."),
+        ERROR_CODE_INVALID_USER_INPUT("CQM-10018", "Invalid User '%s.'"),
+        ERROR_CODE_INVALID_CLAIM_LIST("CQM-10019", "Invalid Claim list of user '%s.'"),
         ERROR_CODE_TRIGGER_CHALLENGE_ANSWER_VALIDATION_EVENT("CQM-15001", "Error while trigger the" +
                 "challenge question answer validation event for user '%s.'"),
         ERROR_CODE_HASH_CHALLENGE_ANSWER("CQM-15002", "Error while hashing the challenge answer."),
         ERROR_CODE_GETTING_CLAIM_VALUES("CQM-15003", "Error while getting the claim values of user '%s."),
-        ERROR_CODE_GETTING_USER_STORE_MANAGER("CQM-15003", "Error while getting user store manager.");
+        ERROR_CODE_UPDATING_CLAIM_VALUES("CQM-15004",
+                "Error while updating the claim values of user '%s."),
+        ERROR_CODE_GETTING_USER_STORE_MANAGER("CQM-15005",
+                "Error while getting user store manager for tenant %s."),
+        ERROR_CODE_LOADING_FAILED_REALM_SERVICE("CQM - 15006",
+                "Failed to retrieve user realm from tenant id : %s"),
+        ERROR_CODE_GETTING_TENANT("CQM-15007","Error getting tenant from the realm service");
 
         private final String code;
         private final String message;
@@ -431,8 +440,8 @@ public class IdentityRecoveryConstants {
         public static final String USERNAME_RECOVERY_RECAPTCHA_ENABLE = "Recovery.ReCaptcha.Username.Enable";
 
         public static final String CHALLENGE_QUESTION_ANSWER_REGEX = "Recovery.ChallengeQuestion.AnswerRegex";
-        public static final String ENABLE_CHALLENGE_QUESTION_ANSWER_UNIQUENESS = "Recovery.ChallengeQuestion" +
-                ".EnableAnswerUniqueness";
+        public static final String ENFORCE_CHALLENGE_QUESTION_ANSWER_UNIQUENESS = "Recovery.ChallengeQuestion" +
+                ".EnforceAnswerUniqueness";
     }
 
     public static class SQLQueries {
