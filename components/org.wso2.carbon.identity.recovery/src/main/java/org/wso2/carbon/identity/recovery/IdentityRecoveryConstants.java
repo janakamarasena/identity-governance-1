@@ -57,6 +57,9 @@ public class IdentityRecoveryConstants {
     public static final String FAILED_LOGIN_LOCKOUT_COUNT_CLAIM =
             "http://wso2.org/claims/identity/failedLoginLockoutCount";
 
+    public static final String USER_NEW_CHALLENGE_ANSWERS = "userNewChallengeAnswers";
+    public static final String USER_OLD_CHALLENGE_ANSWERS = "userOldChallengeAnswers";
+
     // Notification channel claims.
     public static final String VERIFY_EMAIL_CLIAM = "http://wso2.org/claims/identity/verifyEmail";
     public static final String EMAIL_VERIFIED_CLAIM = "http://wso2.org/claims/identity/emailVerified";
@@ -271,9 +274,10 @@ public class IdentityRecoveryConstants {
         ERROR_CODE_USER_OBJECT_NOT_FOUND("PWR-60001", "User object not found in the request"),
 
         // CQM - Challenge Question Manager.
-        ERROR_CODE_INVALID_ANSWER_FORMAT("CQM-10016", "Invalid answer format in the given answer '%s'."),
-        ERROR_CODE_NOT_UNIQUE_ANSWER("CQM-10017", "The given challenge question answer, '%s' has been " +
-                "used more than once."),
+        ERROR_CODE_INVALID_ANSWER_FORMAT("CQM-10016", "Invalid answer format in the given answer " +
+                "for the question '%s'."),
+        ERROR_CODE_NOT_UNIQUE_ANSWER("CQM-10017", "The given challenge question answer, " +
+                "for the question, '%s' has been used more than once."),
         ERROR_CODE_INVALID_USER_INPUT("CQM-10018", "Invalid User '%s.'"),
         ERROR_CODE_INVALID_CLAIM_LIST("CQM-10019", "Invalid Claim list of user '%s.'"),
         ERROR_CODE_TRIGGER_CHALLENGE_ANSWER_VALIDATION_EVENT("CQM-15001", "Error while trigger the" +

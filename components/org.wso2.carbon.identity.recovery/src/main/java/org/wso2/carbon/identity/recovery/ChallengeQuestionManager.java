@@ -18,7 +18,6 @@
 
 package org.wso2.carbon.identity.recovery;
 
-
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -548,7 +547,7 @@ public class ChallengeQuestionManager {
      * @param userChallengeAnswers List of UserChallengeAnswer objects
      * @return Existing challenge questions and answers.
      */
-    private Map<String, String> getExistingAnswers(User user, UserChallengeAnswer[] userChallengeAnswers)
+    private Map<String, String> retrieveAnsweredChallenges(User user, UserChallengeAnswer[] userChallengeAnswers)
             throws IdentityRecoveryException {
 
         ArrayList<String> claimsList = new ArrayList<>();
@@ -575,7 +574,7 @@ public class ChallengeQuestionManager {
         validateUser(user);
 
         // Get the existing challenge questions and answers for the user.
-        Map<String, String> existingQuestionAndAnswers = getExistingAnswers(user,userChallengeAnswers);
+        Map<String, String> existingQuestionAndAnswers = retrieveAnsweredChallenges(user,userChallengeAnswers);
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Setting user challenge question answers in %s's profile.", user.toString()));
@@ -664,9 +663,7 @@ public class ChallengeQuestionManager {
             throws IdentityRecoveryClientException, IdentityRecoveryServerException {
 
         HashMap<String, Object> properties = new HashMap<>();
-        properties.put(IdentityEventConstants.EventProperty.USER_NAME, user.getUserName());
-        properties.put(IdentityEventConstants.EventProperty.TENANT_DOMAIN, user.getTenantDomain());
-        properties.put(IdentityEventConstants.EventProperty.USER_STORE_DOMAIN, user.getUserStoreDomain());
+        properties.put(IdentityEventConstants.EventProperty.USER, user);
         properties.put(IdentityEventConstants.EventProperty.USER_CHALLENGE_ANSWERS, userChallengeAnswers);
         properties.put(IdentityEventConstants.EventProperty.USER_OLD_CHALLENGE_ANSWERS, existingQuestionAndAnswers);
 

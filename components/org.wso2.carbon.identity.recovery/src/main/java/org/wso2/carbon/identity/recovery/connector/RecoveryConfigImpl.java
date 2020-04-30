@@ -108,7 +108,7 @@ public class RecoveryConfigImpl implements IdentityConnectorConfig {
         descriptionMapping.put(IdentityRecoveryConstants.ConnectorConfig.CHALLENGE_QUESTION_ANSWER_REGEX,
                 "Challenge question answer regex");
         descriptionMapping.put(IdentityRecoveryConstants.ConnectorConfig.ENFORCE_CHALLENGE_QUESTION_ANSWER_UNIQUENESS,
-                "Enable the challenge question answer uniqueness validation");
+                "Enforce challenge question answer uniqueness");
         descriptionMapping.put(IdentityRecoveryConstants.ConnectorConfig.RECOVERY_QUESTION_PASSWORD_RECAPTCHA_ENABLE,
                 "Show captcha for challenge question based password recovery");
         descriptionMapping.put(IdentityRecoveryConstants.ConnectorConfig.FORCE_ADD_PW_RECOVERY_QUESTION,
@@ -117,6 +117,7 @@ public class RecoveryConfigImpl implements IdentityConnectorConfig {
                 "Recovery callback URL regex");
         descriptionMapping.put(IdentityRecoveryConstants.ConnectorConfig.PASSWORD_RECOVERY_SMS_OTP_EXPIRY_TIME,
                 "Expiration time of the SMS OTP code for password recovery");
+
         return descriptionMapping;
     }
 
