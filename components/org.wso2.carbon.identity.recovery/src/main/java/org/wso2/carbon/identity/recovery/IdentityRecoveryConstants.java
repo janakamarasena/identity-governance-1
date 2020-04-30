@@ -274,23 +274,10 @@ public class IdentityRecoveryConstants {
         ERROR_CODE_USER_OBJECT_NOT_FOUND("PWR-60001", "User object not found in the request"),
 
         // CQM - Challenge Question Manager.
-        ERROR_CODE_INVALID_ANSWER_FORMAT("CQM-10016", "Invalid answer format in the given answer " +
-                "for the question '%s'."),
-        ERROR_CODE_NOT_UNIQUE_ANSWER("CQM-10017", "The given challenge question answer, " +
-                "for the question, '%s' has been used more than once."),
-        ERROR_CODE_INVALID_USER_INPUT("CQM-10018", "Invalid User '%s.'"),
-        ERROR_CODE_INVALID_CLAIM_LIST("CQM-10019", "Invalid Claim list of user '%s.'"),
-        ERROR_CODE_TRIGGER_CHALLENGE_ANSWER_VALIDATION_EVENT("CQM-15001", "Error while trigger the" +
-                "challenge question answer validation event for user '%s.'"),
-        ERROR_CODE_HASH_CHALLENGE_ANSWER("CQM-15002", "Error while hashing the challenge answer."),
-        ERROR_CODE_GETTING_CLAIM_VALUES("CQM-15003", "Error while getting the claim values of user '%s."),
-        ERROR_CODE_UPDATING_CLAIM_VALUES("CQM-15004",
-                "Error while updating the claim values of user '%s."),
-        ERROR_CODE_GETTING_USER_STORE_MANAGER("CQM-15005",
-                "Error while getting user store manager for tenant %s."),
-        ERROR_CODE_LOADING_FAILED_REALM_SERVICE("CQM - 15006",
-                "Failed to retrieve user realm from tenant id : %s"),
-        ERROR_CODE_GETTING_TENANT("CQM-15007","Error getting tenant from the realm service");
+        ERROR_CODE_INVALID_ANSWER_FORMAT("10016", "Invalid answer format in the given answer " +
+                "for the challenge question '%s'."),
+        ERROR_CODE_NOT_UNIQUE_ANSWER("10017", "The given answer for the challenge question, " +
+                "'%s' has been used more than once.");
 
         private final String code;
         private final String message;

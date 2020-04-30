@@ -679,7 +679,7 @@ public class ChallengeQuestionManager {
             properties.put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
         } catch (UserStoreException e) {
             throw Utils.handleServerException(IdentityRecoveryConstants.ErrorMessages.
-                    ERROR_CODE_GETTING_USER_STORE_MANAGER, user.getTenantDomain(), e);
+                    ERROR_CODE_FAILED_TO_LOAD_USER_STORE_MANAGER, null, e);
         }
 
         Event identityMgtEvent = new Event(eventName, properties);
@@ -691,7 +691,7 @@ public class ChallengeQuestionManager {
             throw new IdentityRecoveryServerException(e.getErrorCode(), e.getMessage(), e);
         } catch (IdentityEventException e) {
             throw Utils.handleServerException(IdentityRecoveryConstants.ErrorMessages.
-                    ERROR_CODE_TRIGGER_CHALLENGE_ANSWER_VALIDATION_EVENT, user.getUserName(), e);
+                    ERROR_CODE_PUBLISH_EVENT, eventName, e);
         }
     }
 

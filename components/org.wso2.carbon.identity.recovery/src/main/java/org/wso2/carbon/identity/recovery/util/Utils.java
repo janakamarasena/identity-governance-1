@@ -390,14 +390,14 @@ public class Utils {
         org.wso2.carbon.user.core.UserStoreManager userStoreManager = getUserStoreManager(user);
         String userStoreQualifiedUsername = IdentityUtil.addDomainToName(user.getUserName(), user.getUserStoreDomain());
         if (ArrayUtils.isEmpty(claimsList)) {
-            throw handleClientException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_INVALID_CLAIM_LIST,
-                    user.getUserName());
+            throw handleClientException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_LOAD_USER_CLAIMS,
+                    null);
         }
         try {
             return userStoreManager
-                        .getUserClaimValues(userStoreQualifiedUsername, claimsList, UserCoreConstants.DEFAULT_PROFILE);
+                    .getUserClaimValues(userStoreQualifiedUsername, claimsList, UserCoreConstants.DEFAULT_PROFILE);
         } catch (UserStoreException e) {
-            throw handleServerException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_GETTING_CLAIM_VALUES,
+            throw handleServerException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_LOAD_USER_CLAIMS,
                     user.getUserName(), e);
         }
     }
@@ -422,8 +422,8 @@ public class Utils {
                         UserCoreConstants.DEFAULT_PROFILE);
             }
         } catch (UserStoreException e) {
-            throw handleServerException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_GETTING_CLAIM_VALUES,
-                    user.getUserName(), e);
+            throw handleServerException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_UPDATE_USER_CLAIMS,
+                    null, e);
         }
     }
 
@@ -443,18 +443,18 @@ public class Utils {
             RealmService realmService = IdentityRecoveryServiceDataHolder.getInstance().getRealmService();
             if (realmService == null || realmService.getTenantUserRealm(tenantId) == null) {
                 throw handleServerException(IdentityRecoveryConstants.ErrorMessages.
-                        ERROR_CODE_LOADING_FAILED_REALM_SERVICE, user.getTenantDomain());
+                        ERROR_CODE_FAILED_TO_LOAD_REALM_SERVICE, user.getTenantDomain());
             }
             userStoreManager = (org.wso2.carbon.user.core.UserStoreManager) realmService.getTenantUserRealm(tenantId).
                     getUserStoreManager();
         } catch (UserStoreException e) {
             throw handleServerException(IdentityRecoveryConstants.ErrorMessages.
-                            ERROR_CODE_LOADING_FAILED_REALM_SERVICE, user.getTenantDomain(), e);
+                    ERROR_CODE_FAILED_TO_LOAD_REALM_SERVICE, user.getTenantDomain(), e);
         }
 
         if (userStoreManager == null) {
-            throw handleServerException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_GETTING_USER_STORE_MANAGER,
-                    user.getTenantDomain());
+            throw handleServerException(IdentityRecoveryConstants.ErrorMessages.
+                    ERROR_CODE_FAILED_TO_LOAD_USER_STORE_MANAGER, null);
         }
         return userStoreManager;
     }

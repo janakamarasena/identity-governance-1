@@ -200,7 +200,7 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
                 hashedNewChallengeAnswer = Utils.doHash(userChallengeAnswer.getAnswer().trim().toLowerCase());
             } catch (UserStoreException e) {
                 throw Utils.handleServerException(
-                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_HASH_CHALLENGE_ANSWER, null);
+                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_NO_HASHING_ALGO, null);
             }
             if (!uniqueChallengeAnswerHashSet.add(hashedNewChallengeAnswer)) {
                 if (log.isDebugEnabled()) {
@@ -209,7 +209,7 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
                             userChallengeAnswer.getQuestion().getQuestion()));
                 }
                 throw Utils.handleClientException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_NOT_UNIQUE_ANSWER,
-                        userChallengeAnswer.getAnswer());
+                        userChallengeAnswer.getQuestion().getQuestion());
             }
         }
     }
