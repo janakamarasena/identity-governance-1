@@ -574,7 +574,7 @@ public class ChallengeQuestionManager {
         validateUser(user);
 
         // Get the existing challenge questions and answers for the user.
-        Map<String, String> existingQuestionAndAnswers = retrieveAnsweredChallenges(user,userChallengeAnswers);
+        Map<String, String> existingQuestionAndAnswers = retrieveAnsweredChallenges(user, userChallengeAnswers);
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Setting user challenge question answers in %s's profile.", user.toString()));
@@ -597,7 +597,7 @@ public class ChallengeQuestionManager {
             String challengesUrisValue = "";
             String separator = getChallengeSeparator();
 
-            Map<String,String> challengeQuestionToUpdate = new HashMap<>();
+            Map<String, String> challengeQuestionToUpdate = new HashMap<>();
 
             if (!ArrayUtils.isEmpty(userChallengeAnswers)) {
                 for (UserChallengeAnswer userChallengeAnswer : userChallengeAnswers) {
@@ -659,7 +659,7 @@ public class ChallengeQuestionManager {
      * @throws IdentityRecoveryServerException Error while getting the user store manager or triggering the event.
      */
     private void triggerChallengeAnswersValidation(User user, UserChallengeAnswer[] userChallengeAnswers,
-                                                   Map<String, String> existingQuestionAndAnswers,String eventName)
+                                                   Map<String, String> existingQuestionAndAnswers, String eventName)
             throws IdentityRecoveryClientException, IdentityRecoveryServerException {
 
         HashMap<String, Object> properties = new HashMap<>();

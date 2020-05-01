@@ -54,11 +54,13 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
     private static final Log log = LogFactory.getLog(ChallengeAnswerValidationHandler.class);
 
     public String getName() {
+
         return "challengeAnswerValidation";
     }
 
     @Override
     public int getPriority(MessageContext messageContext) {
+
         return 50;
     }
 
@@ -91,10 +93,10 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
     /**
      * Validate challenge answers.
      *
-     * @param user User.
-     * @param userChallengeAnswers Challenge Answers.
+     * @param user                       User.
+     * @param userChallengeAnswers       Challenge Answers.
      * @param existingQuestionAndAnswers Previously stored answers.
-     * @throws IdentityEventException If an error occurred while reading the configurations.
+     * @throws IdentityEventException          If an error occurred while reading the configurations.
      * @throws IdentityRecoveryClientException If an invalid answers was given.
      * @throws IdentityRecoveryServerException If an error occurred while hashing the answers.
      */
