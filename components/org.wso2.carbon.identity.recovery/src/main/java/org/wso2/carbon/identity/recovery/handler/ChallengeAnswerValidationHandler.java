@@ -104,10 +104,12 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
                                           Map<String, String> existingQuestionAndAnswers)
             throws IdentityEventException, IdentityRecoveryClientException, IdentityRecoveryServerException {
 
-        List<UserChallengeAnswer> existingChallengeAnswers = filterChallengeAnswers(userChallengeAnswers,
-                existingQuestionAndAnswers).get(IdentityRecoveryConstants.USER_OLD_CHALLENGE_ANSWERS);
-        List<UserChallengeAnswer> newChallengeAnswers = filterChallengeAnswers(userChallengeAnswers,
-                existingQuestionAndAnswers).get(IdentityRecoveryConstants.USER_NEW_CHALLENGE_ANSWERS);
+        Map<String, List<UserChallengeAnswer>> challengeAnswers = filterChallengeAnswers(userChallengeAnswers,
+                existingQuestionAndAnswers);
+        List<UserChallengeAnswer> existingChallengeAnswers = challengeAnswers.
+                get(IdentityRecoveryConstants.USER_OLD_CHALLENGE_ANSWERS);
+        List<UserChallengeAnswer> newChallengeAnswers = challengeAnswers.
+                get(IdentityRecoveryConstants.USER_NEW_CHALLENGE_ANSWERS);
         validateChallengeAnswerRegex(user.getTenantDomain(), newChallengeAnswers);
         if (Boolean.parseBoolean(Utils.getConnectorConfig(IdentityRecoveryConstants.ConnectorConfig.
                 ENFORCE_CHALLENGE_QUESTION_ANSWER_UNIQUENESS, user.getTenantDomain()))) {
@@ -156,9 +158,9 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
     /**
      * Validate the challenge question answer regex.
      *
-     * @param tenantDomain        Tenant Domain
-     * @param newChallengeAnswers Newly added challenge question answers
-     * @throws IdentityEventException          Error while reading the configurations
+     * @param tenantDomain        Tenant Domain.
+     * @param newChallengeAnswers Newly added challenge question answers.
+     * @throws IdentityEventException          Error while reading the configurations.
      * @throws IdentityRecoveryClientException Error while validating the answer regex.
      */
     private void validateChallengeAnswerRegex(String tenantDomain,
@@ -182,9 +184,9 @@ public class ChallengeAnswerValidationHandler extends AbstractEventHandler {
     /**
      * Validate the uniqueness of a given answer.
      *
-     * @param newChallengeAnswers      Newly added challenge question answers
-     * @param existingChallengeAnswers Existing challenge question answers
-     * @throws IdentityRecoveryServerException Error while hashing the newly added answers
+     * @param newChallengeAnswers      Newly added challenge question answers.
+     * @param existingChallengeAnswers Existing challenge question answers.
+     * @throws IdentityRecoveryServerException Error while hashing the newly added answers.
      * @throws IdentityRecoveryClientException Error while validating the answer uniqueness.
      */
     private void validateChallengeAnswerUniqueness(List<UserChallengeAnswer> newChallengeAnswers,

@@ -602,9 +602,9 @@ public class ChallengeQuestionManager {
             if (!ArrayUtils.isEmpty(userChallengeAnswers)) {
                 for (UserChallengeAnswer userChallengeAnswer : userChallengeAnswers) {
 
-                    if (userChallengeAnswer.getQuestion().getQuestionSetId() != null &&
-                            userChallengeAnswer.getQuestion().getQuestion() !=
-                                    null && userChallengeAnswer.getAnswer() != null) {
+                    if (StringUtils.isNotBlank(userChallengeAnswer.getQuestion().getQuestionSetId()) &&
+                            StringUtils.isNotBlank(userChallengeAnswer.getQuestion().getQuestion()) &&
+                            StringUtils.isNotBlank(userChallengeAnswer.getAnswer())) {
 
                         // Get the previous answer for the question.
                         String oldValue = existingQuestionAndAnswers

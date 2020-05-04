@@ -273,7 +273,11 @@ public class IdentityRecoveryConstants {
         // Resend Account Confirmation.
         ERROR_CODE_USER_OBJECT_NOT_FOUND("PWR-60001", "User object not found in the request"),
 
-        // CQM - Challenge Question Manager.
+        /**
+         * CQM - Challenge Question Manager.
+         *
+         * @see <href="https://github.com/wso2/identity-api-user/blob/master/components/org.wso2.carbon.identity.api.user.challenge/org.wso2.carbon.identity.api.user.challenge.common/src/main/java/org/wso2/carbon/identity/api/user/challenge/common/Constant.java">identity-api.user</>
+         */
         ERROR_CODE_INVALID_ANSWER_FORMAT("10016", "Invalid answer format in the given answer " +
                 "for the challenge question '%s'."),
         ERROR_CODE_NOT_UNIQUE_ANSWER("10017", "The given answer for the challenge question, " +
