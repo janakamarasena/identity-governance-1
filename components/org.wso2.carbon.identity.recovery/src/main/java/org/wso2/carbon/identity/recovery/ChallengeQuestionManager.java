@@ -550,7 +550,7 @@ public class ChallengeQuestionManager {
     private Map<String, String> retrieveAnsweredChallenges(User user, UserChallengeAnswer[] userChallengeAnswers)
             throws IdentityRecoveryException {
 
-        ArrayList<String> claimsList = new ArrayList<>();
+        List<String> claimsList = new ArrayList<>();
         for (UserChallengeAnswer answer : userChallengeAnswers) {
             claimsList.add(answer.getQuestion().getQuestionSetId().trim());
         }
@@ -662,7 +662,7 @@ public class ChallengeQuestionManager {
                                                    Map<String, String> existingQuestionAndAnswers, String eventName)
             throws IdentityRecoveryClientException, IdentityRecoveryServerException {
 
-        HashMap<String, Object> properties = new HashMap<>();
+        Map<String, Object> properties = new HashMap<>();
         properties.put(IdentityEventConstants.EventProperty.USER, user);
         properties.put(IdentityEventConstants.EventProperty.USER_CHALLENGE_ANSWERS, userChallengeAnswers);
         properties.put(IdentityEventConstants.EventProperty.USER_OLD_CHALLENGE_ANSWERS, existingQuestionAndAnswers);
