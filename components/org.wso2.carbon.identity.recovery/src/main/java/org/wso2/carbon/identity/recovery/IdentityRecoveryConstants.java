@@ -434,9 +434,8 @@ public class IdentityRecoveryConstants {
         public static final String PASSWORD_RECOVERY_RECAPTCHA_ENABLE = "Recovery.ReCaptcha.Password.Enable";
         public static final String USERNAME_RECOVERY_RECAPTCHA_ENABLE = "Recovery.ReCaptcha.Username.Enable";
 
-        public static final String CHALLENGE_QUESTION_ANSWER_REGEX = "Recovery.ChallengeQuestion.AnswerRegex";
-        public static final String ENFORCE_CHALLENGE_QUESTION_ANSWER_UNIQUENESS = "Recovery.ChallengeQuestion" +
-                ".EnforceAnswerUniqueness";
+        public static final String CHALLENGE_QUESTION_ANSWER_REGEX = "Recovery.Question.Answer.Regex";
+        public static final String ENFORCE_CHALLENGE_QUESTION_ANSWER_UNIQUENESS = "Recovery.Question.Answer.Uniqueness";
     }
 
     public static class SQLQueries {
