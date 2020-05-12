@@ -573,9 +573,6 @@ public class ChallengeQuestionManager {
 
         validateUser(user);
 
-        // Get the existing challenge questions and answers for the user.
-        Map<String, String> existingQuestionAndAnswers = retrieveAnsweredChallenges(user, userChallengeAnswers);
-
         if (log.isDebugEnabled()) {
             log.debug(String.format("Setting user challenge question answers in %s's profile.", user.toString()));
         }
@@ -589,6 +586,9 @@ public class ChallengeQuestionManager {
 
             // check whether the answered questions exist in the tenant domain
             checkChallengeQuestionExists(userChallengeAnswers, tenantDomain);
+
+            // Get the existing challenge questions and answers for the user.
+            Map<String, String> existingQuestionAndAnswers = retrieveAnsweredChallenges(user, userChallengeAnswers);
 
             triggerChallengeAnswersValidation(user, userChallengeAnswers,
                     existingQuestionAndAnswers, IdentityEventConstants.Event.PRE_SET_CHALLENGE_QUESTION_ANSWERS);
