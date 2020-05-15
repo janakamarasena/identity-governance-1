@@ -27,6 +27,7 @@ import org.wso2.carbon.identity.core.util.IdentityCoreConstants;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.identity.event.bean.IdentityEventMessageContext;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.recovery.IdentityRecoveryConstants;
@@ -80,11 +81,11 @@ public class AccountConfirmationValidationHandler extends AbstractEventHandler {
         }
 
 
-        if (IdentityEventConstants.Event.PRE_AUTHENTICATION.equals(event.getEventName())) {
-                if(log.isDebugEnabled()){
-                    log.debug("PreAuthenticate");
-                }
-            boolean isAccountLocked = true ;
+        if (IdentityEventConstants.Event.POST_AUTHENTICATION.equals(event.getEventName())) {
+            if (log.isDebugEnabled()) {
+                log.debug("Handling PostAuthenticate for " + user);
+            }
+            boolean isAccountLocked;
             try {
                 if (isAuthPolicyAccountExistCheck() && !isUserExistsInDomain(userStoreManager, userName)) {
                     IdentityErrorMsgContext customErrorMessageContext = new IdentityErrorMsgContext(UserCoreConstants
@@ -98,7 +99,8 @@ public class AccountConfirmationValidationHandler extends AbstractEventHandler {
             } catch (UserStoreException e) {
                 throw new IdentityEventException("Error while retrieving account lock claim value", e);
             }
-            if (isAccountLocked && !isUserAccountConfirmed(user)) {
+            if ((Boolean) event.getEventProperties().get(IdentityEventConstants.EventProperty.OPERATION_STATUS) &&
+                    isAccountLocked && !isUserAccountConfirmed(user)) {
                 IdentityErrorMsgContext customErrorMessageContext = new IdentityErrorMsgContext(
                         IdentityCoreConstants.USER_ACCOUNT_NOT_CONFIRMED_ERROR_CODE);
                 IdentityUtil.setIdentityErrorMsg(customErrorMessageContext);
@@ -118,7 +120,15 @@ public class AccountConfirmationValidationHandler extends AbstractEventHandler {
         return 50 ;
     }
 
-
+    /*
+     Subscriptions made from the identity-event.properties will be overridden with POST_AUTHENTICATION since we handle
+     the POST_AUTHENTICATION event only from the handleEvent method.
+     */
+    public boolean canHandle(MessageContext messageContext) {
+        Event event = ((IdentityEventMessageContext) messageContext).getEvent();
+        String eventName = event.getEventName();
+        return IdentityEventConstants.Event.POST_AUTHENTICATION.equals(eventName);
+    }
     /**
      * Check whether user is already confirmed or not.
      *
