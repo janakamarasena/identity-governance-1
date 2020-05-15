@@ -125,10 +125,12 @@ public class AccountConfirmationValidationHandler extends AbstractEventHandler {
      the POST_AUTHENTICATION event only from the handleEvent method.
      */
     public boolean canHandle(MessageContext messageContext) {
+
         Event event = ((IdentityEventMessageContext) messageContext).getEvent();
         String eventName = event.getEventName();
         return IdentityEventConstants.Event.POST_AUTHENTICATION.equals(eventName);
     }
+
     /**
      * Check whether user is already confirmed or not.
      *
