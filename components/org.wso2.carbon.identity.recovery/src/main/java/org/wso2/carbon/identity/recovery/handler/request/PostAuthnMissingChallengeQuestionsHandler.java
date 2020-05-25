@@ -217,7 +217,7 @@ public class PostAuthnMissingChallengeQuestionsHandler extends AbstractPostAuthn
     /**
      * Returns whether the user has already provided the challenge questions.
      *
-     * @param user                                    User Authenticated User.
+     * @param user                                    Authenticated User.
      * @param minimumForcedChallengeQuestionsAnswered Minimum number of challenge questions forced should be answered.
      * @return Boolean value indicating whether the user has already provided challenge questions.
      */
@@ -226,13 +226,15 @@ public class PostAuthnMissingChallengeQuestionsHandler extends AbstractPostAuthn
 
         int questionsAnswered = getUserAnsweredChallengeSetUris(user).size();
         int challengeQuestionSets = getChallengeSetUris(user).size();
-        /* If "Minimum Number of Forced Challenge Questions to be Answered" property is not configured,
+        /*
+        If "Minimum Number of Forced Challenge Questions to be Answered" property is not configured,
         check whether the user has answered for at least one question.
-        */
+         */
         if (StringUtils.isEmpty(minimumForcedChallengeQuestionsAnswered)) {
-            return (questionsAnswered > 0);
+            return questionsAnswered > 0;
         }
-        /* If "Minimum Number of Forced Challenge Questions to be Answered" property is configured,
+        /*
+         If "Minimum Number of Forced Challenge Questions to be Answered" property is configured,
         check whether the user has answered at least minimum number of forced questions or check whether the
         user has already answered to all available question sets.
          */
@@ -303,11 +305,11 @@ public class PostAuthnMissingChallengeQuestionsHandler extends AbstractPostAuthn
                 if (StringUtils.isBlank(claimValue)) {
                     return questionSetsAnswered;
                 }
-                questionSetsAnswered =
-                        Arrays.asList(claimValue.split(IdentityRecoveryConstants.DEFAULT_CHALLENGE_QUESTION_SEPARATOR));
             }
         } catch (IdentityException | UserStoreException e) {
-            log.error("Exception occurred while retrieving tenant ID for the user :" + userName, e);
+            String errorMessage =
+                    String.format("Exception occurred while retrieving tenant ID for the user : %s.", userName);
+            log.error(errorMessage, e);
         }
         return questionSetsAnswered;
     }
@@ -317,7 +319,8 @@ public class PostAuthnMissingChallengeQuestionsHandler extends AbstractPostAuthn
      *
      * @param tenantId Tenant id.
      * @return UserStoreManager object.
-     * @throws IdentityRecoveryServerException Error getting UserStoreManager
+     * @throws IdentityRecoveryServerException IdentityRecoveryServerException If an error occurred while
+     * getting UserStoreManager for the given tenant.
      */
     private UserStoreManager getUserStoreManager(int tenantId) throws IdentityRecoveryServerException {
 
