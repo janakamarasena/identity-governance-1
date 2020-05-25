@@ -234,7 +234,7 @@ public class PostAuthnMissingChallengeQuestionsHandler extends AbstractPostAuthn
             return questionsAnswered > 0;
         }
         /*
-         If "Minimum Number of Forced Challenge Questions to be Answered" property is configured,
+        If "Minimum Number of Forced Challenge Questions to be Answered" property is configured,
         check whether the user has answered at least minimum number of forced questions or check whether the
         user has already answered to all available question sets.
          */
@@ -302,8 +302,9 @@ public class PostAuthnMissingChallengeQuestionsHandler extends AbstractPostAuthn
                         .getUserClaimValues(userName, new String[]{IdentityRecoveryConstants.CHALLENGE_QUESTION_URI},
                                 UserCoreConstants.DEFAULT_PROFILE);
                 String claimValue = claimsMap.get(IdentityRecoveryConstants.CHALLENGE_QUESTION_URI);
-                if (StringUtils.isBlank(claimValue)) {
-                    return questionSetsAnswered;
+                if (StringUtils.isNotBlank(claimValue)) {
+                    questionSetsAnswered = Arrays.asList(
+                            claimValue.split(IdentityRecoveryConstants.DEFAULT_CHALLENGE_QUESTION_SEPARATOR));
                 }
             }
         } catch (IdentityException | UserStoreException e) {
