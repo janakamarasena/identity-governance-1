@@ -16,6 +16,8 @@
 
 package org.wso2.carbon.identity.recovery;
 
+import org.wso2.carbon.identity.user.feature.lock.mgt.lockcode.LockCode;
+
 /**
  * Identity management related constants.
  */
@@ -33,7 +35,8 @@ public class IdentityRecoveryConstants {
     public static final String NOTIFICATION_TYPE_RESEND_PASSWORD_RESET = "resendPasswordReset";
     public static final String NOTIFICATION_TYPE_ADMIN_FORCED_PASSWORD_RESET = "adminforcedpasswordreset";
     public static final String NOTIFICATION_TYPE_RESEND_ADMIN_FORCED_PASSWORD_RESET = "resendAdminForcedPasswordReset";
-    public static final String NOTIFICATION_TYPE_ADMIN_FORCED_PASSWORD_RESET_WITH_OTP = "adminforcedpasswordresetwithotp";
+    public static final String NOTIFICATION_TYPE_ADMIN_FORCED_PASSWORD_RESET_WITH_OTP =
+            "adminforcedpasswordresetwithotp";
     public static final String NOTIFICATION_TYPE_RESEND_ADMIN_FORCED_PASSWORD_RESET_WITH_OTP =
             "resendAdminForcedPasswordResetWithOTP";
     public static final String NOTIFICATION_TYPE_ACCOUNT_CONFIRM = "accountconfirmation";
@@ -60,6 +63,8 @@ public class IdentityRecoveryConstants {
     public static final String USER_NEW_CHALLENGE_ANSWERS = "userNewChallengeAnswers";
     public static final String USER_OLD_CHALLENGE_ANSWERS = "userOldChallengeAnswers";
 
+    public static final String ENABLE_PER_USER_FEATURE_LOCKING = "EnablePerUserFeatureLocking";
+
     // Notification channel claims.
     public static final String VERIFY_EMAIL_CLIAM = "http://wso2.org/claims/identity/verifyEmail";
     public static final String EMAIL_VERIFIED_CLAIM = "http://wso2.org/claims/identity/emailVerified";
@@ -68,7 +73,8 @@ public class IdentityRecoveryConstants {
     public static final String PREFERRED_CHANNEL_CLAIM = "http://wso2.org/claims/identity/preferredChannel";
 
     public static final String ASK_PASSWORD_CLAIM = "http://wso2.org/claims/identity/askPassword";
-    public static final String ADMIN_FORCED_PASSWORD_RESET_CLAIM = "http://wso2.org/claims/identity/adminForcedPasswordReset";
+    public static final String ADMIN_FORCED_PASSWORD_RESET_CLAIM =
+            "http://wso2.org/claims/identity/adminForcedPasswordReset";
     public static final String OTP_PASSWORD_CLAIM = "http://wso2.org/claims/oneTimePassword";
     public static final String USER_ROLES_CLAIM = "http://wso2.org/claims/role";
     public static final String EMAIL_ADDRESS_CLAIM = "http://wso2.org/claims/emailaddress";
@@ -135,8 +141,10 @@ public class IdentityRecoveryConstants {
         ERROR_CODE_INVALID_CREDENTIALS("17002", "Invalid Credentials"),
         ERROR_CODE_LOCKED_ACCOUNT("17003", "User account is locked - '%s.'"),
         ERROR_CODE_DISABLED_ACCOUNT("17004", "user account is disabled '%s.'"),
-        ERROR_CODE_REGISTRY_EXCEPTION_GET_CHALLENGE_QUESTIONS("20001", "Registry exception while getting challenge question"),
-        ERROR_CODE_REGISTRY_EXCEPTION_SET_CHALLENGE_QUESTIONS("20002", "Registry exception while setting challenge question"),
+        ERROR_CODE_REGISTRY_EXCEPTION_GET_CHALLENGE_QUESTIONS("20001",
+                "Registry exception while getting challenge question"),
+        ERROR_CODE_REGISTRY_EXCEPTION_SET_CHALLENGE_QUESTIONS("20002",
+                "Registry exception while setting challenge question"),
         ERROR_CODE_GETTING_CHALLENGE_URIS("20003", "Error while getting challenge question URIs '%s.'"),
         ERROR_CODE_GETTING_CHALLENGE_QUESTIONS("20004", "Error while getting challenge questions '%s.'"),
         ERROR_CODE_GETTING_CHALLENGE_QUESTION("20005", "Error while getting challenge question '%s.'"),
@@ -151,7 +159,8 @@ public class IdentityRecoveryConstants {
         ERROR_CODE_NO_FIELD_FOUND_FOR_USER_RECOVERY("20014", "No fileds found for username recovery"),
         ERROR_CODE_NO_USER_FOUND_FOR_RECOVERY("20015", "No valid user found"),
         ERROR_CODE_ISSUE_IN_LOADING_RECOVERY_CONFIGS("20016", "Error loading recovery configs"),
-        ERROR_CODE_NOTIFICATION_BASED_PASSWORD_RECOVERY_NOT_ENABLE("20017", "Notification based password recovery is not enabled"),
+        ERROR_CODE_NOTIFICATION_BASED_PASSWORD_RECOVERY_NOT_ENABLE("20017",
+                "Notification based password recovery is not enabled"),
         ERROR_CODE_QUESTION_BASED_RECOVERY_NOT_ENABLE("20018", "Security questions based recovery is not enabled"),
         ERROR_CODE_ADD_SELF_USER("20019", "Error while adding self signup user"),
         ERROR_CODE_LOCK_USER_USER("20020", "Error while lock user"),
@@ -167,7 +176,8 @@ public class IdentityRecoveryConstants {
         ERROR_CODE_HISTORY_VIOLATE("22001", "This password has been used in recent history. Please choose a different" +
                 " password"),
         ERROR_CODE_MULTIPLE_QUESTION_NOT_ALLOWED("20029", "Multiple challenge question not allowed for this operation"),
-        ERROR_CODE_USER_ALREADY_EXISTS("20030", "User %s already exists in the system. Please use a different username."),
+        ERROR_CODE_USER_ALREADY_EXISTS("20030",
+                "User %s already exists in the system. Please use a different username."),
         ERROR_CODE_USERNAME_RECOVERY_NOT_ENABLE("20031", "Username recovery is not enabled"),
         ERROR_CODE_MULTIPLE_USERS_MATCHING("20032", "Multiple users found"),
         ERROR_CODE_ISSUE_IN_LOADING_SIGNUP_CONFIGS("20033", "Error loading signup configs"),
@@ -269,7 +279,11 @@ public class IdentityRecoveryConstants {
                 + "recovery request"),
         ERROR_CODE_UNEXPECTED_ERROR_PASSWORD_RESET("PWR-15001", "Unexpected error during "
                 + "password reset"),
-
+        ERROR_CODE_FAILED_TO_LOCK_FEATURE_FOR_USER("PWR-10009", "Error occurred while locking per-user feature: %s"),
+        ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE("PWR-10010", "Error occurred while fetching lock status for " +
+                "feature: %s"),
+        ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED("PWR-10011", "Security question based password recovery feature" +
+                " is locked: %s"),
         // Resend Account Confirmation.
         ERROR_CODE_USER_OBJECT_NOT_FOUND("PWR-60001", "User object not found in the request"),
 
@@ -281,7 +295,8 @@ public class IdentityRecoveryConstants {
         ERROR_CODE_INVALID_ANSWER_FORMAT("10016", "Invalid answer format in the given answer " +
                 "for the challenge question '%s'."),
         ERROR_CODE_NOT_UNIQUE_ANSWER("10017", "The given answer for the challenge question, " +
-                "'%s' has been used more than once.");
+                "'%s' has been used more than once."),
+        ;
 
         private final String code;
         private final String message;
@@ -423,13 +438,16 @@ public class IdentityRecoveryConstants {
         public static final String EMAIL_VERIFICATION_ON_UPDATE_EXPIRY_TIME = "UserClaimUpdate.Email.VerificationCode" +
                 ".ExpiryTime";
         public static final String ASK_PASSWORD_EXPIRY_TIME = "EmailVerification.AskPassword.ExpiryTime";
-        public static final String ASK_PASSWORD_TEMP_PASSWORD_GENERATOR = "EmailVerification.AskPassword.PasswordGenerator";
+        public static final String ASK_PASSWORD_TEMP_PASSWORD_GENERATOR =
+                "EmailVerification.AskPassword.PasswordGenerator";
         public static final String EMAIL_ACCOUNT_LOCK_ON_CREATION = "EmailVerification.LockOnCreation";
-        public static final String EMAIL_VERIFICATION_NOTIFICATION_INTERNALLY_MANAGE = "EmailVerification.Notification.InternallyManage";
+        public static final String EMAIL_VERIFICATION_NOTIFICATION_INTERNALLY_MANAGE =
+                "EmailVerification.Notification.InternallyManage";
 
         public static final String ENABLE_ADMIN_PASSWORD_RESET_OFFLINE = "Recovery.AdminPasswordReset.Offline";
         public static final String ENABLE_ADMIN_PASSWORD_RESET_WITH_OTP = "Recovery.AdminPasswordReset.OTP";
-        public static final String ENABLE_ADMIN_PASSWORD_RESET_WITH_RECOVERY_LINK = "Recovery.AdminPasswordReset.RecoveryLink";
+        public static final String ENABLE_ADMIN_PASSWORD_RESET_WITH_RECOVERY_LINK =
+                "Recovery.AdminPasswordReset.RecoveryLink";
 
         public static final String PASSWORD_RECOVERY_RECAPTCHA_ENABLE = "Recovery.ReCaptcha.Password.Enable";
         public static final String USERNAME_RECOVERY_RECAPTCHA_ENABLE = "Recovery.ReCaptcha.Username.Enable";
@@ -444,7 +462,8 @@ public class IdentityRecoveryConstants {
                 + "(USER_NAME, USER_DOMAIN, TENANT_ID, CODE, SCENARIO,STEP, TIME_CREATED, REMAINING_SETS)"
                 + "VALUES (?,?,?,?,?,?,?,?)";
         public static final String LOAD_RECOVERY_DATA = "SELECT "
-                + "* FROM IDN_RECOVERY_DATA WHERE USER_NAME = ? AND USER_DOMAIN = ? AND TENANT_ID = ? AND CODE = ? AND " +
+                +
+                "* FROM IDN_RECOVERY_DATA WHERE USER_NAME = ? AND USER_DOMAIN = ? AND TENANT_ID = ? AND CODE = ? AND " +
                 "SCENARIO = ? AND STEP = ?";
 
         public static final String LOAD_RECOVERY_DATA_CASE_INSENSITIVE = "SELECT * FROM IDN_RECOVERY_DATA WHERE" +
@@ -530,5 +549,47 @@ public class IdentityRecoveryConstants {
         /* State maintained to skip triggering an email verification when the update request contains other claims
         without the email address claim. */
         SKIP_ON_INAPPLICABLE_CLAIMS
+    }
+
+    /**
+     * Enum contains the codes and status messages for per-user feature locking.
+     */
+    public enum PerUserLockCode implements LockCode {
+        MAX_ATTEMPTS_EXCEEDED("FL_001", "Maximum attempts for the feature: %s exceeded.");
+
+        private final String featureLockCode;
+        private final String featureLockReason;
+
+        /**
+         * Per-user lock code constructor.
+         *
+         * @param featureLockCode   Lock reason code.
+         * @param featureLockReason Reason for the feature lock.
+         */
+        PerUserLockCode(String featureLockCode, String featureLockReason) {
+
+            this.featureLockCode = featureLockCode;
+            this.featureLockReason = featureLockReason;
+        }
+
+        @Override
+        public String getFeatureLockReason() {
+
+            return featureLockReason;
+        }
+
+        @Override
+        public String getFeatureLockCode() {
+
+            return featureLockCode;
+        }
+    }
+
+    /**
+     * Constants used for masking the feature types.
+     */
+    public static class FeatureTypes {
+
+        public static final String FEATURE_SECURITY_QUESTION_PW_RECOVERY = "SecurityQuestionBasedPasswordRecovery";
     }
 }

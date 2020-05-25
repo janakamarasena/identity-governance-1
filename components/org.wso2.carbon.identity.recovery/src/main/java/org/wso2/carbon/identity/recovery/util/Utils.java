@@ -43,6 +43,9 @@ import org.wso2.carbon.identity.recovery.IdentityRecoveryException;
 import org.wso2.carbon.identity.recovery.IdentityRecoveryServerException;
 import org.wso2.carbon.identity.recovery.internal.IdentityRecoveryServiceDataHolder;
 import org.wso2.carbon.identity.recovery.model.ChallengeQuestion;
+import org.wso2.carbon.identity.user.feature.lock.mgt.FeatureLockManager;
+import org.wso2.carbon.identity.user.feature.lock.mgt.exception.FeatureLockManagementException;
+import org.wso2.carbon.identity.user.feature.lock.mgt.model.FeatureLockStatus;
 import org.wso2.carbon.user.api.Claim;
 import org.wso2.carbon.user.api.ClaimManager;
 import org.wso2.carbon.user.api.RealmConfiguration;
@@ -50,6 +53,7 @@ import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserRealm;
+import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.constants.UserCoreErrorConstants;
 import org.wso2.carbon.user.core.service.RealmService;
 import org.wso2.carbon.user.core.util.UserCoreUtil;
@@ -846,5 +850,77 @@ public class Utils {
         user.setTenantDomain(tenantDomain);
         user.setUserStoreDomain(IdentityUtil.extractDomainFromName(username));
         return user;
+    }
+
+    /**
+     * Checks whether the per-user feature locking is enabled.
+     *
+     * @return true if the config is set to true, false otherwise.
+     */
+    public static boolean isPerUserFeatureLockingEnabled() {
+
+        return Boolean
+                .parseBoolean(IdentityUtil.getProperty(IdentityRecoveryConstants.ENABLE_PER_USER_FEATURE_LOCKING));
+    }
+
+    /**
+     * Get the unique user ID of a user given the tenant domain and the user name.
+     *
+     * @param tenantDomain Tenant domain of the user.
+     * @param userName     Username of the user.
+     * @return Unique identifier of the user.
+     */
+    public static String getUserIdFromUserName(String tenantDomain, String userName)
+            throws IdentityRecoveryServerException {
+
+        org.wso2.carbon.user.core.UserStoreManager userStoreManager;
+        String userId;
+        int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
+
+        try {
+            RealmService realmService = IdentityRecoveryServiceDataHolder.getInstance().getRealmService();
+            if (realmService == null || realmService.getTenantUserRealm(tenantId) == null) {
+                throw handleServerException(IdentityRecoveryConstants.ErrorMessages.
+                        ERROR_CODE_FAILED_TO_LOAD_REALM_SERVICE, tenantDomain);
+            }
+            userStoreManager = (org.wso2.carbon.user.core.UserStoreManager) realmService.getTenantUserRealm(tenantId).
+                    getUserStoreManager();
+        } catch (UserStoreException | IdentityRecoveryServerException e) {
+            throw handleServerException(IdentityRecoveryConstants.ErrorMessages.
+                    ERROR_CODE_FAILED_TO_LOAD_REALM_SERVICE, tenantDomain, e);
+        }
+        try {
+            userId = ((AbstractUserStoreManager) userStoreManager).getUserIDFromUserName(userName);
+        } catch (org.wso2.carbon.user.core.UserStoreException e) {
+            throw Utils.handleServerException(IdentityRecoveryConstants.ErrorMessages
+                    .ERROR_CODE_FAILED_TO_UPDATE_USER_CLAIMS, null, e);
+        }
+        return userId;
+    }
+
+    /**
+     * Get the lock status of a feature given the tenant domain, user name and the feature type.
+     *
+     * @param tenantDomain Tenant domain of the user.
+     * @param userName     Username of the user.
+     * @param featureType  Type of the the feature.
+     * @return The status of the feature, {@link FeatureLockStatus}.
+     */
+    public static FeatureLockStatus getFeatureStatusOfUser(String tenantDomain, String userName, String featureType)
+            throws IdentityRecoveryServerException {
+
+        int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
+        String userId = getUserIdFromUserName(tenantDomain, userName);
+
+        FeatureLockManager featureLockManager =
+                IdentityRecoveryServiceDataHolder.getInstance().getFeatureLockManagerService();
+
+        try {
+            return featureLockManager.getFeatureLockStatusForUser(featureType, tenantId, userId);
+        } catch (FeatureLockManagementException e) {
+            throw Utils.handleServerException(
+                    IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE,
+                    featureType, e);
+        }
     }
 }

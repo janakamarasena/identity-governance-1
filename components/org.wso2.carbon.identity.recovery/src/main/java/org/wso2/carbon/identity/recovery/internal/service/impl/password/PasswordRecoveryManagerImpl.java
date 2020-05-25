@@ -53,6 +53,10 @@ import org.wso2.carbon.registry.core.utils.UUIDGenerator;
 import java.util.ArrayList;
 import java.util.Map;
 
+import static org.wso2.carbon.identity.recovery.IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY;
+import static org.wso2.carbon.identity.recovery.util.Utils.getFeatureStatusOfUser;
+import static org.wso2.carbon.identity.recovery.util.Utils.isPerUserFeatureLockingEnabled;
+
 /**
  * Class that implements the PasswordRecoveryManager.
  */
@@ -98,7 +102,14 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
         if (isNotificationBasedRecoveryEnabled) {
             recoveryInformationDTO.setRecoveryChannelInfoDTO(recoveryChannelInfoDTO);
         }
-        recoveryInformationDTO.setQuestionBasedRecoveryEnabled(isQuestionBasedRecoveryEnabled);
+        // Check if question based password recovery is unlocked in per-user feature locking mode.
+        if (isPerUserFeatureLockingEnabled()) {
+            boolean isQuestionBasedRecoveryLocked = getFeatureStatusOfUser(tenantDomain,
+                    recoveryChannelInfoDTO.getUsername(), FEATURE_SECURITY_QUESTION_PW_RECOVERY).getLockStatus();
+            recoveryInformationDTO.setQuestionBasedRecoveryEnabled(!isQuestionBasedRecoveryLocked);
+        } else {
+            recoveryInformationDTO.setQuestionBasedRecoveryEnabled(isQuestionBasedRecoveryEnabled);
+        }
         recoveryInformationDTO.setNotificationBasedRecoveryEnabled(isNotificationBasedRecoveryEnabled);
         return recoveryInformationDTO;
     }

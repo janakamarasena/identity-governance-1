@@ -19,7 +19,6 @@
 
 package org.wso2.carbon.identity.recovery.password;
 
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
@@ -48,11 +47,15 @@ import org.wso2.carbon.identity.recovery.model.UserRecoveryData;
 import org.wso2.carbon.identity.recovery.store.JDBCRecoveryDataStore;
 import org.wso2.carbon.identity.recovery.store.UserRecoveryDataStore;
 import org.wso2.carbon.identity.recovery.util.Utils;
+import org.wso2.carbon.identity.user.feature.lock.mgt.FeatureLockManager;
+import org.wso2.carbon.identity.user.feature.lock.mgt.exception.FeatureLockManagementException;
+import org.wso2.carbon.identity.user.feature.lock.mgt.model.FeatureLockStatus;
 import org.wso2.carbon.registry.core.utils.UUIDGenerator;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.api.UserStoreManager;
 import org.wso2.carbon.user.core.UserCoreConstants;
 import org.wso2.carbon.user.core.UserRealm;
+import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 import org.wso2.carbon.user.core.service.RealmService;
 
 import java.util.ArrayList;
@@ -61,6 +64,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
+import static org.wso2.carbon.identity.recovery.IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY;
+import static org.wso2.carbon.identity.recovery.IdentityRecoveryConstants.PerUserLockCode.MAX_ATTEMPTS_EXCEEDED;
+import static org.wso2.carbon.identity.recovery.util.Utils.getFeatureStatusOfUser;
+import static org.wso2.carbon.identity.recovery.util.Utils.isPerUserFeatureLockingEnabled;
 
 /**
  * Security Question Password Recovery Manager
@@ -78,6 +86,8 @@ public class SecurityQuestionPasswordRecoveryManager {
     private static final String PROPERTY_LOGIN_FAIL_TIMEOUT_RATIO = "account.lock.handler.login.fail.timeout.ratio";
 
     private static SecurityQuestionPasswordRecoveryManager instance = new SecurityQuestionPasswordRecoveryManager();
+
+    private static boolean isPerUserFeatureLockingEnabled = isPerUserFeatureLockingEnabled();
 
     private SecurityQuestionPasswordRecoveryManager() {
 
@@ -109,6 +119,17 @@ public class SecurityQuestionPasswordRecoveryManager {
                 .ConnectorConfig.QUESTION_BASED_PW_RECOVERY, user.getTenantDomain()));
         if (!isRecoveryEnable) {
             throw Utils.handleClientException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_QUESTION_BASED_RECOVERY_NOT_ENABLE, null);
+        }
+
+        if (isPerUserFeatureLockingEnabled) {
+            FeatureLockStatus featureLockStatus = getFeatureStatusOfUser(user.getTenantDomain(),
+                    user.getUserName(), FEATURE_SECURITY_QUESTION_PW_RECOVERY);
+
+            if (featureLockStatus.getLockStatus()) {
+                throw Utils.handleClientException(
+                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED,
+                        featureLockStatus.getFeatureLockReason());
+            }
         }
 
         UserRecoveryDataStore userRecoveryDataStore = JDBCRecoveryDataStore.getInstance();
@@ -613,20 +634,55 @@ public class SecurityQuestionPasswordRecoveryManager {
                     (unlockTimeRatio, failedLoginLockoutCountValue));
             // Calculate unlock-time by adding current-time and unlock-time-interval in milli seconds.
             long unlockTime = System.currentTimeMillis() + unlockTimePropertyValue;
-            updatedClaims.put(IdentityRecoveryConstants.ACCOUNT_LOCKED_CLAIM, Boolean.TRUE.toString());
-            updatedClaims.put(IdentityRecoveryConstants.PASSWORD_RESET_FAIL_ATTEMPTS_CLAIM, "0");
-            updatedClaims.put(IdentityRecoveryConstants.ACCOUNT_UNLOCK_TIME_CLAIM, String.valueOf(unlockTime));
-            updatedClaims.put(IdentityRecoveryConstants.FAILED_LOGIN_LOCKOUT_COUNT_CLAIM,
-                    String.valueOf(failedLoginLockoutCountValue + 1));
-            try {
-                userStoreManager.setUserClaimValues(IdentityUtil.addDomainToName(user.getUserName(),
-                        user.getUserStoreDomain()), updatedClaims, UserCoreConstants.DEFAULT_PROFILE);
-                throw Utils.handleClientException(IdentityRecoveryConstants.ErrorMessages
-                        .ERROR_CODE_LOCKED_ACCOUNT, IdentityUtil.addDomainToName(user.getUserName(),
-                        user.getUserStoreDomain()));
-            } catch (org.wso2.carbon.user.core.UserStoreException e) {
-                throw Utils.handleServerException(IdentityRecoveryConstants.ErrorMessages
-                        .ERROR_CODE_FAILED_TO_UPDATE_USER_CLAIMS, null, e);
+            if (isPerUserFeatureLockingEnabled) {
+                String userId;
+                FeatureLockManager featureLockManager =
+                        IdentityRecoveryServiceDataHolder.getInstance().getFeatureLockManagerService();
+                try {
+                    userId =
+                            ((AbstractUserStoreManager) userStoreManager).getUserIDFromUserName(user.getUserName());
+                } catch (org.wso2.carbon.user.core.UserStoreException e) {
+                    throw Utils.handleServerException(IdentityRecoveryConstants.ErrorMessages
+                            .ERROR_CODE_FAILED_TO_UPDATE_USER_CLAIMS, null, e);
+                }
+                try {
+                    featureLockManager.lockFeatureForUser(FEATURE_SECURITY_QUESTION_PW_RECOVERY, tenantId, userId,
+                            unlockTimePropertyValue, MAX_ATTEMPTS_EXCEEDED);
+
+                } catch (FeatureLockManagementException e) {
+                    throw Utils.handleServerException(
+                            IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_LOCK_FEATURE_FOR_USER,
+                            FEATURE_SECURITY_QUESTION_PW_RECOVERY, e);
+                }
+                updatedClaims.put(IdentityRecoveryConstants.PASSWORD_RESET_FAIL_ATTEMPTS_CLAIM, "0");
+                try {
+                    userStoreManager.setUserClaimValues(IdentityUtil.addDomainToName(user.getUserName(),
+                            user.getUserStoreDomain()), updatedClaims, UserCoreConstants.DEFAULT_PROFILE);
+                    throw Utils.handleClientException(
+                            IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED,
+                            String.format(MAX_ATTEMPTS_EXCEEDED.getFeatureLockReason(),
+                                    FEATURE_SECURITY_QUESTION_PW_RECOVERY));
+                } catch (org.wso2.carbon.user.core.UserStoreException e) {
+                    throw Utils.handleServerException(IdentityRecoveryConstants.ErrorMessages
+                            .ERROR_CODE_FAILED_TO_UPDATE_USER_CLAIMS, null, e);
+                }
+
+            } else {
+                updatedClaims.put(IdentityRecoveryConstants.ACCOUNT_LOCKED_CLAIM, Boolean.TRUE.toString());
+                updatedClaims.put(IdentityRecoveryConstants.PASSWORD_RESET_FAIL_ATTEMPTS_CLAIM, "0");
+                updatedClaims.put(IdentityRecoveryConstants.ACCOUNT_UNLOCK_TIME_CLAIM, String.valueOf(unlockTime));
+                updatedClaims.put(IdentityRecoveryConstants.FAILED_LOGIN_LOCKOUT_COUNT_CLAIM,
+                        String.valueOf(failedLoginLockoutCountValue + 1));
+                try {
+                    userStoreManager.setUserClaimValues(IdentityUtil.addDomainToName(user.getUserName(),
+                            user.getUserStoreDomain()), updatedClaims, UserCoreConstants.DEFAULT_PROFILE);
+                    throw Utils.handleClientException(IdentityRecoveryConstants.ErrorMessages
+                            .ERROR_CODE_LOCKED_ACCOUNT, IdentityUtil.addDomainToName(user.getUserName(),
+                            user.getUserStoreDomain()));
+                } catch (org.wso2.carbon.user.core.UserStoreException e) {
+                    throw Utils.handleServerException(IdentityRecoveryConstants.ErrorMessages
+                            .ERROR_CODE_FAILED_TO_UPDATE_USER_CLAIMS, null, e);
+                }
             }
         } else {
             updatedClaims.put(IdentityRecoveryConstants.PASSWORD_RESET_FAIL_ATTEMPTS_CLAIM,

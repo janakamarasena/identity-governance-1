@@ -52,6 +52,7 @@ import org.wso2.carbon.identity.recovery.services.password.PasswordRecoveryManag
 import org.wso2.carbon.identity.recovery.services.username.UsernameRecoveryManager;
 import org.wso2.carbon.identity.recovery.signup.UserSelfRegistrationManager;
 import org.wso2.carbon.identity.recovery.username.NotificationUsernameRecoveryManager;
+import org.wso2.carbon.identity.user.feature.lock.mgt.FeatureLockManager;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.stratos.common.listeners.TenantMgtListener;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -306,6 +307,32 @@ public class IdentityRecoveryServiceComponent {
     protected void unsetConsentUtilityService(ConsentUtilityService utilityService) {
 
         dataHolder.setConsentUtilityService(null);
+    }
+
+    /**
+     * Sets Feature Lock Manager OSGI Service.
+     *
+     * @param featureLockManager Feature Lock Manager.
+     */
+    @Reference(
+            name = "FeatureLockManager",
+            service = org.wso2.carbon.identity.user.feature.lock.mgt.FeatureLockManager.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetFeatureLockMgtService")
+    protected void setFeatureLockManagerService(FeatureLockManager featureLockManager) {
+
+        dataHolder.getInstance().setFeatureLockManagerService(featureLockManager);
+    }
+
+    /**
+     * Unset Feature Lock Manager OSGI service.
+     *
+     * @param featureLockManager Feature Lock Manager.
+     */
+    protected void unsetFeatureLockMgtService(FeatureLockManager featureLockManager) {
+
+        dataHolder.getInstance().setFeatureLockManagerService(null);
     }
 
     private void loadDefaultChallengeQuestions() throws IdentityRecoveryException {
