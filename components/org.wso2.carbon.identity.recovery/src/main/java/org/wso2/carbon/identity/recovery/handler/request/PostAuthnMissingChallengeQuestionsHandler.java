@@ -320,21 +320,18 @@ public class PostAuthnMissingChallengeQuestionsHandler extends AbstractPostAuthn
      *
      * @param tenantId Tenant id.
      * @return UserStoreManager object.
-     * @throws IdentityRecoveryServerException IdentityRecoveryServerException If an error occurred while
-     * getting UserStoreManager for the given tenant.
+     * @throws IdentityRecoveryServerException If an error occurred while getting UserStoreManager for the given tenant.
      */
     private UserStoreManager getUserStoreManager(int tenantId) throws IdentityRecoveryServerException {
 
         UserStoreManager userStoreManager;
         RealmService realmService = IdentityRecoveryServiceDataHolder.getInstance().getRealmService();
         try {
-            if (realmService.getTenantUserRealm(tenantId) != null) {
-                userStoreManager = (UserStoreManager) realmService.getTenantUserRealm(tenantId).
-                        getUserStoreManager();
-            } else {
+            if (realmService.getTenantUserRealm(tenantId) == null) {
                 throw org.wso2.carbon.identity.recovery.util.Utils.handleServerException(
                         IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_ERROR_GETTING_USERSTORE_MANAGER, null);
             }
+            userStoreManager = (UserStoreManager) realmService.getTenantUserRealm(tenantId).getUserStoreManager();
         } catch (UserStoreException e) {
             if (log.isDebugEnabled()) {
                 String error = String.format("Error retrieving the user store manager for the tenant : %s", tenantId);
