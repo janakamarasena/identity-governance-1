@@ -23,6 +23,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.application.common.model.User;
+import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventException;
 import org.wso2.carbon.identity.governance.service.notification.NotificationChannels;
@@ -40,6 +41,7 @@ import org.wso2.carbon.identity.recovery.dto.RecoveryChannelInfoDTO;
 import org.wso2.carbon.identity.recovery.dto.RecoveryInformationDTO;
 import org.wso2.carbon.identity.recovery.dto.ResendConfirmationDTO;
 import org.wso2.carbon.identity.recovery.dto.SuccessfulPasswordResetDTO;
+import org.wso2.carbon.identity.recovery.internal.IdentityRecoveryServiceDataHolder;
 import org.wso2.carbon.identity.recovery.internal.service.impl.UserAccountRecoveryManager;
 import org.wso2.carbon.identity.recovery.model.Property;
 import org.wso2.carbon.identity.recovery.model.UserRecoveryData;
@@ -48,14 +50,14 @@ import org.wso2.carbon.identity.recovery.services.password.PasswordRecoveryManag
 import org.wso2.carbon.identity.recovery.store.JDBCRecoveryDataStore;
 import org.wso2.carbon.identity.recovery.store.UserRecoveryDataStore;
 import org.wso2.carbon.identity.recovery.util.Utils;
+import org.wso2.carbon.identity.user.feature.lock.mgt.FeatureLockManager;
+import org.wso2.carbon.identity.user.feature.lock.mgt.exception.FeatureLockManagementException;
+import org.wso2.carbon.identity.user.feature.lock.mgt.model.FeatureLockStatus;
 import org.wso2.carbon.registry.core.utils.UUIDGenerator;
 
 import java.util.ArrayList;
 import java.util.Map;
 
-import static org.wso2.carbon.identity.recovery.IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY;
-import static org.wso2.carbon.identity.recovery.util.Utils.getFeatureStatusOfUser;
-import static org.wso2.carbon.identity.recovery.util.Utils.isPerUserFeatureLockingEnabled;
 
 /**
  * Class that implements the PasswordRecoveryManager.
@@ -63,6 +65,8 @@ import static org.wso2.carbon.identity.recovery.util.Utils.isPerUserFeatureLocki
 public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
 
     private static final Log log = LogFactory.getLog(PasswordRecoveryManagerImpl.class);
+
+    private boolean isPerUserFeatureLockingEnabled = Utils.isPerUserFeatureLockingEnabled();
 
     /**
      * Get the username recovery information with available verified channel details.
@@ -103,9 +107,10 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
             recoveryInformationDTO.setRecoveryChannelInfoDTO(recoveryChannelInfoDTO);
         }
         // Check if question based password recovery is unlocked in per-user feature locking mode.
-        if (isPerUserFeatureLockingEnabled()) {
+        if (isPerUserFeatureLockingEnabled) {
             boolean isQuestionBasedRecoveryLocked = getFeatureStatusOfUser(tenantDomain,
-                    recoveryChannelInfoDTO.getUsername(), FEATURE_SECURITY_QUESTION_PW_RECOVERY).getLockStatus();
+                    recoveryChannelInfoDTO.getUsername(),
+                    IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY).getLockStatus();
             recoveryInformationDTO.setQuestionBasedRecoveryEnabled(!isQuestionBasedRecoveryLocked);
         } else {
             recoveryInformationDTO.setQuestionBasedRecoveryEnabled(isQuestionBasedRecoveryEnabled);
@@ -596,6 +601,32 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
                     IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_PASSWORD_RECOVERY_EMPTY_TENANT_DOMAIN.getCode(),
                     IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_PASSWORD_RECOVERY_EMPTY_TENANT_DOMAIN
                             .getMessage(), null);
+        }
+    }
+
+    /**
+     * Get the lock status of a feature given the tenant domain, user name and the feature type.
+     *
+     * @param tenantDomain Tenant domain of the user.
+     * @param userName     Username of the user.
+     * @param featureId    Identifier of the the feature.
+     * @return The status of the feature, {@link FeatureLockStatus}.
+     */
+    private FeatureLockStatus getFeatureStatusOfUser(String tenantDomain, String userName, String featureId)
+            throws IdentityRecoveryServerException {
+
+        int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
+        String userId = Utils.getUserIdFromUserName(tenantDomain, userName);
+
+        FeatureLockManager featureLockManager =
+                IdentityRecoveryServiceDataHolder.getInstance().getFeatureLockManagerService();
+
+        try {
+            return featureLockManager.getFeatureLockStatusForUser(featureId, tenantId, userId);
+        } catch (FeatureLockManagementException e) {
+            throw Utils.handleServerException(
+                    IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE,
+                    featureId, e);
         }
     }
 }

@@ -65,11 +65,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static org.wso2.carbon.identity.recovery.IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY;
-import static org.wso2.carbon.identity.recovery.IdentityRecoveryConstants.PerUserLockCode.MAX_ATTEMPTS_EXCEEDED;
-import static org.wso2.carbon.identity.recovery.util.Utils.getFeatureStatusOfUser;
-import static org.wso2.carbon.identity.recovery.util.Utils.isPerUserFeatureLockingEnabled;
-
 /**
  * Security Question Password Recovery Manager
  */
@@ -87,7 +82,7 @@ public class SecurityQuestionPasswordRecoveryManager {
 
     private static SecurityQuestionPasswordRecoveryManager instance = new SecurityQuestionPasswordRecoveryManager();
 
-    private static boolean isPerUserFeatureLockingEnabled = isPerUserFeatureLockingEnabled();
+    private static boolean isPerUserFeatureLockingEnabled = Utils.isPerUserFeatureLockingEnabled();
 
     private SecurityQuestionPasswordRecoveryManager() {
 
@@ -122,8 +117,8 @@ public class SecurityQuestionPasswordRecoveryManager {
         }
 
         if (isPerUserFeatureLockingEnabled) {
-            FeatureLockStatus featureLockStatus = getFeatureStatusOfUser(user.getTenantDomain(),
-                    user.getUserName(), FEATURE_SECURITY_QUESTION_PW_RECOVERY);
+            FeatureLockStatus featureLockStatus = getFeatureStatusOfUser(user,
+                    IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY);
 
             if (featureLockStatus.getLockStatus()) {
                 throw Utils.handleClientException(
@@ -646,13 +641,18 @@ public class SecurityQuestionPasswordRecoveryManager {
                             .ERROR_CODE_FAILED_TO_UPDATE_USER_CLAIMS, null, e);
                 }
                 try {
-                    featureLockManager.lockFeatureForUser(FEATURE_SECURITY_QUESTION_PW_RECOVERY, tenantId, userId,
-                            unlockTimePropertyValue, MAX_ATTEMPTS_EXCEEDED);
+                    featureLockManager.lockFeatureForUser(
+                            IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY, tenantId,
+                            userId, unlockTimePropertyValue,
+                            IdentityRecoveryConstants.RecoveryLockReasons.PWD_RECOVERY_MAX_ATTEMPTS_EXCEEDED
+                                    .getFeatureLockCode(),
+                            IdentityRecoveryConstants.RecoveryLockReasons.PWD_RECOVERY_MAX_ATTEMPTS_EXCEEDED
+                                    .getFeatureLockReason());
 
                 } catch (FeatureLockManagementException e) {
                     throw Utils.handleServerException(
                             IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_LOCK_FEATURE_FOR_USER,
-                            FEATURE_SECURITY_QUESTION_PW_RECOVERY, e);
+                            IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY, e);
                 }
                 updatedClaims.put(IdentityRecoveryConstants.PASSWORD_RESET_FAIL_ATTEMPTS_CLAIM, "0");
                 try {
@@ -660,8 +660,8 @@ public class SecurityQuestionPasswordRecoveryManager {
                             user.getUserStoreDomain()), updatedClaims, UserCoreConstants.DEFAULT_PROFILE);
                     throw Utils.handleClientException(
                             IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED,
-                            String.format(MAX_ATTEMPTS_EXCEEDED.getFeatureLockReason(),
-                                    FEATURE_SECURITY_QUESTION_PW_RECOVERY));
+                            IdentityRecoveryConstants.RecoveryLockReasons.PWD_RECOVERY_MAX_ATTEMPTS_EXCEEDED
+                                    .getFeatureLockReason());
                 } catch (org.wso2.carbon.user.core.UserStoreException e) {
                     throw Utils.handleServerException(IdentityRecoveryConstants.ErrorMessages
                             .ERROR_CODE_FAILED_TO_UPDATE_USER_CLAIMS, null, e);
@@ -724,6 +724,31 @@ public class SecurityQuestionPasswordRecoveryManager {
 
         } catch (UserStoreException e) {
             throw Utils.handleServerException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_UNEXPECTED, null);
+        }
+    }
+
+    /**
+     * Get the lock status of a feature given the tenant domain, user name and the feature type.
+     *
+     * @param user      User.
+     * @param featureId Identifier of the the feature.
+     * @return The status of the feature, {@link FeatureLockStatus}.
+     */
+    private FeatureLockStatus getFeatureStatusOfUser(User user, String featureId)
+            throws IdentityRecoveryServerException {
+
+        int tenantId = IdentityTenantUtil.getTenantId(user.getTenantDomain());
+        String userId = Utils.getUserIdFromUserName(user.getTenantDomain(), user.getUserName());
+
+        FeatureLockManager featureLockManager =
+                IdentityRecoveryServiceDataHolder.getInstance().getFeatureLockManagerService();
+
+        try {
+            return featureLockManager.getFeatureLockStatusForUser(featureId, tenantId, userId);
+        } catch (FeatureLockManagementException e) {
+            throw Utils.handleServerException(
+                    IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE,
+                    featureId, e);
         }
     }
 }

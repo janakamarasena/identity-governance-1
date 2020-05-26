@@ -875,6 +875,7 @@ public class Utils {
 
         org.wso2.carbon.user.core.UserStoreManager userStoreManager;
         String userId;
+
         int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
 
         try {
@@ -896,31 +897,5 @@ public class Utils {
                     .ERROR_CODE_FAILED_TO_UPDATE_USER_CLAIMS, null, e);
         }
         return userId;
-    }
-
-    /**
-     * Get the lock status of a feature given the tenant domain, user name and the feature type.
-     *
-     * @param tenantDomain Tenant domain of the user.
-     * @param userName     Username of the user.
-     * @param featureType  Type of the the feature.
-     * @return The status of the feature, {@link FeatureLockStatus}.
-     */
-    public static FeatureLockStatus getFeatureStatusOfUser(String tenantDomain, String userName, String featureType)
-            throws IdentityRecoveryServerException {
-
-        int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
-        String userId = getUserIdFromUserName(tenantDomain, userName);
-
-        FeatureLockManager featureLockManager =
-                IdentityRecoveryServiceDataHolder.getInstance().getFeatureLockManagerService();
-
-        try {
-            return featureLockManager.getFeatureLockStatusForUser(featureType, tenantId, userId);
-        } catch (FeatureLockManagementException e) {
-            throw Utils.handleServerException(
-                    IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE,
-                    featureType, e);
-        }
     }
 }
