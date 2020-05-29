@@ -113,7 +113,7 @@ public class IdentityRecoveryConstants {
     public static final String USER_ACCOUNT_RECOVERY = "UAR";
 
     public static final int SMS_OTP_CODE_LENGTH = 6;
-
+    public static final String ENABLE_DETAILED_ERROR_RESPONSE = "Recovery.ErrorMessage.EnableDetailedErrorMessages";
     // Recovery code given at the username and password recovery initiation.
     public static final int RECOVERY_CODE_DEFAULT_EXPIRY_TIME = 1;
     public static final int RESEND_CODE_DEFAULT_EXPIRY_TIME = 1;
@@ -208,6 +208,8 @@ public class IdentityRecoveryConstants {
                 " question %s of the set %s"),
         ERROR_CODE_ERROR_RETRIVING_CLAIM("18004", "Error when retrieving the locale claim of user '%s' of '%s' domain" +
                 "."),
+        ERROR_CODE_FAILED_TO_LOCK_FEATURE_FOR_USER("55001", "Server error occurred while locking feature."),
+        ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE("55002", "Error occurred while fetching lock status."),
 
         // USR - User Self Registration.
         ERROR_CODE_UNSUPPORTED_PREFERRED_CHANNELS("USR-10001",
@@ -271,9 +273,7 @@ public class IdentityRecoveryConstants {
                 + "recovery request"),
         ERROR_CODE_UNEXPECTED_ERROR_PASSWORD_RESET("PWR-15001", "Unexpected error during "
                 + "password reset"),
-        ERROR_CODE_FAILED_TO_LOCK_FEATURE_FOR_USER("PWR-15002", "Server error occurred during feature locking."),
-        ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE("PWR-15003", "Error occurred while fetching lock status."),
-        ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED("PWR-15004", "Security question based password recovery feature" +
+        ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED("PWR-15007", "Security question based password recovery" +
                 " is locked"),
         // Resend Account Confirmation.
         ERROR_CODE_USER_OBJECT_NOT_FOUND("PWR-60001", "User object not found in the request"),

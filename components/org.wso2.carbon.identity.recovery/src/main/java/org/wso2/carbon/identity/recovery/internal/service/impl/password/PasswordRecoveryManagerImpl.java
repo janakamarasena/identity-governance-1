@@ -67,6 +67,7 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
     private static final Log log = LogFactory.getLog(PasswordRecoveryManagerImpl.class);
 
     private boolean isPerUserFeatureLockingEnabled = Utils.isPerUserFeatureLockingEnabled();
+    private static boolean isDetailedErrorMessagesEnabled = Utils.isDetailedErrorResponseEnabled();
 
     /**
      * Get the username recovery information with available verified channel details.
@@ -622,11 +623,22 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
                 IdentityRecoveryServiceDataHolder.getInstance().getFeatureLockManagerService();
 
         try {
-            return featureLockManager.getFeatureLockStatusForUser(featureId, tenantId, userId);
+            return featureLockManager.getFeatureLockStatusForUser(userId, tenantId, featureId);
         } catch (FeatureLockManagementException e) {
-            throw Utils.handleServerException(
-                    IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE,
-                    featureId, e);
+            String mappedErrorCode =
+                    Utils.prependOperationScenarioToErrorCode(
+                            IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE
+                                    .getCode(), IdentityRecoveryConstants.PASSWORD_RECOVERY_SCENARIO);
+            StringBuilder message =
+                    new StringBuilder(
+                            IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE
+                                    .getMessage());
+            if (isDetailedErrorMessagesEnabled) {
+                message.append(String.format("featureId: %s for %s.",
+                        IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY,
+                        userName));
+            }
+            throw Utils.handleServerException(mappedErrorCode, message.toString(), null);
         }
     }
 }

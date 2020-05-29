@@ -43,9 +43,6 @@ import org.wso2.carbon.identity.recovery.IdentityRecoveryException;
 import org.wso2.carbon.identity.recovery.IdentityRecoveryServerException;
 import org.wso2.carbon.identity.recovery.internal.IdentityRecoveryServiceDataHolder;
 import org.wso2.carbon.identity.recovery.model.ChallengeQuestion;
-import org.wso2.carbon.identity.user.feature.lock.mgt.FeatureLockManager;
-import org.wso2.carbon.identity.user.feature.lock.mgt.exception.FeatureLockManagementException;
-import org.wso2.carbon.identity.user.feature.lock.mgt.model.FeatureLockStatus;
 import org.wso2.carbon.user.api.Claim;
 import org.wso2.carbon.user.api.ClaimManager;
 import org.wso2.carbon.user.api.RealmConfiguration;
@@ -861,6 +858,17 @@ public class Utils {
 
         return Boolean
                 .parseBoolean(IdentityUtil.getProperty(IdentityRecoveryConstants.ENABLE_PER_USER_FEATURE_LOCKING));
+    }
+
+    /**
+     * Checks whether detailed error messages are enabled.
+     *
+     * @return true if the config is set to true, false otherwise.
+     */
+    public static boolean isDetailedErrorResponseEnabled() {
+
+        return Boolean
+                .parseBoolean(IdentityUtil.getProperty(IdentityRecoveryConstants.ENABLE_DETAILED_ERROR_RESPONSE));
     }
 
     /**

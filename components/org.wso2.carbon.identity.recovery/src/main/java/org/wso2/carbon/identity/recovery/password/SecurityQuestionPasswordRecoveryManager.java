@@ -26,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.identity.application.common.model.Property;
 import org.wso2.carbon.identity.application.common.model.User;
+import org.wso2.carbon.identity.base.IdentityException;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
@@ -83,6 +84,7 @@ public class SecurityQuestionPasswordRecoveryManager {
     private static SecurityQuestionPasswordRecoveryManager instance = new SecurityQuestionPasswordRecoveryManager();
 
     private static boolean isPerUserFeatureLockingEnabled = Utils.isPerUserFeatureLockingEnabled();
+    private static boolean isDetailedErrorMessagesEnabled = Utils.isDetailedErrorResponseEnabled();
 
     private SecurityQuestionPasswordRecoveryManager() {
 
@@ -121,9 +123,15 @@ public class SecurityQuestionPasswordRecoveryManager {
                     IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY);
 
             if (featureLockStatus.getLockStatus()) {
-                throw Utils.handleClientException(
-                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED,
-                        featureLockStatus.getFeatureLockReason());
+                StringBuilder message = new StringBuilder(
+                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED
+                                .getMessage());
+                if (isDetailedErrorMessagesEnabled) {
+                    message.append(": ").append(featureLockStatus.getFeatureLockReason());
+                }
+                throw IdentityException.error(IdentityRecoveryClientException.class,
+                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED.getCode(),
+                        message.toString());
             }
         }
 
@@ -641,27 +649,45 @@ public class SecurityQuestionPasswordRecoveryManager {
                             .ERROR_CODE_FAILED_TO_UPDATE_USER_CLAIMS, null, e);
                 }
                 try {
-                    featureLockManager.lockFeatureForUser(
-                            IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY, tenantId,
-                            userId, unlockTimePropertyValue,
+                    featureLockManager.lockFeatureForUser(userId, tenantId,
+                            IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY,
+                            unlockTimePropertyValue,
                             IdentityRecoveryConstants.RecoveryLockReasons.PWD_RECOVERY_MAX_ATTEMPTS_EXCEEDED
                                     .getFeatureLockCode(),
                             IdentityRecoveryConstants.RecoveryLockReasons.PWD_RECOVERY_MAX_ATTEMPTS_EXCEEDED
                                     .getFeatureLockReason());
 
                 } catch (FeatureLockManagementException e) {
-                    throw Utils.handleServerException(
-                            IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_LOCK_FEATURE_FOR_USER,
-                            IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY, e);
+                    String mappedErrorCode =
+                            Utils.prependOperationScenarioToErrorCode(
+                                    IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_LOCK_FEATURE_FOR_USER
+                                            .getCode(), IdentityRecoveryConstants.PASSWORD_RECOVERY_SCENARIO);
+                    StringBuilder message =
+                            new StringBuilder(
+                                    IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_LOCK_FEATURE_FOR_USER
+                                            .getMessage());
+                    if (isDetailedErrorMessagesEnabled) {
+                        message.append(String.format("featureId: %s for %s.",
+                                IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY,
+                                user.getUserName()));
+                    }
+                    throw Utils.handleServerException(mappedErrorCode, message.toString(), null);
                 }
                 updatedClaims.put(IdentityRecoveryConstants.PASSWORD_RESET_FAIL_ATTEMPTS_CLAIM, "0");
                 try {
                     userStoreManager.setUserClaimValues(IdentityUtil.addDomainToName(user.getUserName(),
                             user.getUserStoreDomain()), updatedClaims, UserCoreConstants.DEFAULT_PROFILE);
-                    throw Utils.handleClientException(
-                            IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED,
-                            IdentityRecoveryConstants.RecoveryLockReasons.PWD_RECOVERY_MAX_ATTEMPTS_EXCEEDED
-                                    .getFeatureLockReason());
+                    StringBuilder message = new StringBuilder(
+                            IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED
+                                    .getMessage());
+                    if (isDetailedErrorMessagesEnabled) {
+                        message.append(": ")
+                                .append(IdentityRecoveryConstants.RecoveryLockReasons.PWD_RECOVERY_MAX_ATTEMPTS_EXCEEDED
+                                        .getFeatureLockReason());
+                    }
+                    throw IdentityException.error(IdentityRecoveryClientException.class,
+                            IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED
+                                    .getCode(), message.toString());
                 } catch (org.wso2.carbon.user.core.UserStoreException e) {
                     throw Utils.handleServerException(IdentityRecoveryConstants.ErrorMessages
                             .ERROR_CODE_FAILED_TO_UPDATE_USER_CLAIMS, null, e);
@@ -728,7 +754,7 @@ public class SecurityQuestionPasswordRecoveryManager {
     }
 
     /**
-     * Get the lock status of a feature given the tenant domain, user name and the feature type.
+     * Get the lock status of a feature given the tenant domain, user name and the feature Id.
      *
      * @param user      User.
      * @param featureId Identifier of the the feature.
@@ -744,11 +770,22 @@ public class SecurityQuestionPasswordRecoveryManager {
                 IdentityRecoveryServiceDataHolder.getInstance().getFeatureLockManagerService();
 
         try {
-            return featureLockManager.getFeatureLockStatusForUser(featureId, tenantId, userId);
+            return featureLockManager.getFeatureLockStatusForUser(userId, tenantId, featureId);
         } catch (FeatureLockManagementException e) {
-            throw Utils.handleServerException(
-                    IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE,
-                    featureId, e);
+            String mappedErrorCode =
+                    Utils.prependOperationScenarioToErrorCode(
+                            IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE
+                                    .getCode(), IdentityRecoveryConstants.PASSWORD_RECOVERY_SCENARIO);
+            StringBuilder message =
+                    new StringBuilder(
+                            IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE
+                                    .getMessage());
+            if (isDetailedErrorMessagesEnabled) {
+                message.append(String.format("featureId: %s for %s.",
+                        IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY,
+                        user.getUserName()));
+            }
+            throw Utils.handleServerException(mappedErrorCode, message.toString(), null);
         }
     }
 }
