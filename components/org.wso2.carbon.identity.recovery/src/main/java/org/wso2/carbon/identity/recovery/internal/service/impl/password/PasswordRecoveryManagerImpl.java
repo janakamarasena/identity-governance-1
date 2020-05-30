@@ -617,7 +617,7 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
             throws IdentityRecoveryServerException {
 
         int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
-        String userId = Utils.getUserIdFromUserName(tenantDomain, userName);
+        String userId = Utils.getUserIdFromUserName(tenantId, userName);
 
         FeatureLockManager featureLockManager =
                 IdentityRecoveryServiceDataHolder.getInstance().getFeatureLockManagerService();

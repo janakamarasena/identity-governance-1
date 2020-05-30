@@ -874,29 +874,27 @@ public class Utils {
     /**
      * Get the unique user ID of a user given the tenant domain and the user name.
      *
-     * @param tenantDomain Tenant domain of the user.
-     * @param userName     Username of the user.
+     * @param tenantId Tenant Id of the user.
+     * @param userName Username of the user.
      * @return Unique identifier of the user.
      */
-    public static String getUserIdFromUserName(String tenantDomain, String userName)
+    public static String getUserIdFromUserName(int tenantId, String userName)
             throws IdentityRecoveryServerException {
 
         org.wso2.carbon.user.core.UserStoreManager userStoreManager;
         String userId;
 
-        int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
-
         try {
             RealmService realmService = IdentityRecoveryServiceDataHolder.getInstance().getRealmService();
             if (realmService == null || realmService.getTenantUserRealm(tenantId) == null) {
                 throw handleServerException(IdentityRecoveryConstants.ErrorMessages.
-                        ERROR_CODE_FAILED_TO_LOAD_REALM_SERVICE, tenantDomain);
+                        ERROR_CODE_FAILED_TO_LOAD_REALM_SERVICE, String.valueOf(tenantId));
             }
             userStoreManager = (org.wso2.carbon.user.core.UserStoreManager) realmService.getTenantUserRealm(tenantId).
                     getUserStoreManager();
         } catch (UserStoreException | IdentityRecoveryServerException e) {
             throw handleServerException(IdentityRecoveryConstants.ErrorMessages.
-                    ERROR_CODE_FAILED_TO_LOAD_REALM_SERVICE, tenantDomain, e);
+                    ERROR_CODE_FAILED_TO_LOAD_REALM_SERVICE, String.valueOf(tenantId), e);
         }
         try {
             userId = ((AbstractUserStoreManager) userStoreManager).getUserIDFromUserName(userName);

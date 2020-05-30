@@ -57,6 +57,10 @@ public class IdentityRecoveryConstants {
     public static final String FAILED_LOGIN_LOCKOUT_COUNT_CLAIM =
             "http://wso2.org/claims/identity/failedLoginLockoutCount";
 
+    public static final String FEATURE_LOCKOUT_COUNT_PROPERTY = "LockoutCount";
+    public static final String FEATURE_FAILED_ATTEMPTS_PROPERTY = "FailedAttempts";
+    public static final String FEATURE_MAX_ATTEMPTS = "MaxAttempts";
+
     public static final String USER_NEW_CHALLENGE_ANSWERS = "userNewChallengeAnswers";
     public static final String USER_OLD_CHALLENGE_ANSWERS = "userOldChallengeAnswers";
 
@@ -210,6 +214,12 @@ public class IdentityRecoveryConstants {
                 "."),
         ERROR_CODE_FAILED_TO_LOCK_FEATURE_FOR_USER("55001", "Server error occurred while locking feature."),
         ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE("55002", "Error occurred while fetching lock status."),
+        ERROR_CODE_FAILED_TO_GET_PROPERTIES_FOR_FEATURE("55003", "Error occurred while fetching feature lock " +
+                "properties."),
+        ERROR_CODE_FAILED_TO_ADD_PROPERTIES_FOR_FEATURE("55004", "Error occurred while adding feature lock " +
+                "properties."),
+        ERROR_CODE_FAILED_TO_UPDATE_PROPERTIES_FOR_FEATURE("55005", "Error occurred while updating feature lock " +
+                "property."),
 
         // USR - User Self Registration.
         ERROR_CODE_UNSUPPORTED_PREFERRED_CHANNELS("USR-10001",
