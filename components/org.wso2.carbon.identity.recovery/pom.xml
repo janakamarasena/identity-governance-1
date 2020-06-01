@@ -100,7 +100,8 @@
         </dependency>
         <dependency>
             <groupId>org.wso2.carbon.identity.framework</groupId>
-            <artifactId>org.wso2.carbon.identity.user.feature.lock.mgt</artifactId>
+            <artifactId>org.wso2.carbon.identity.user.feature.mgt</artifactId>
+            <version>5.17.5</version>
         </dependency>
         <dependency>
             <groupId>org.apache.felix</groupId>

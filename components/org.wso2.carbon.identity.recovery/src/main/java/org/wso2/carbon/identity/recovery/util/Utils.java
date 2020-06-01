@@ -242,6 +242,19 @@ public class Utils {
                 IdentityRecoveryServerException.class, error.getCode(), errorDescription);
     }
 
+    public static IdentityRecoveryServerException handleFeatureLockMgtServerException(
+            IdentityRecoveryConstants.ErrorMessages error, String userId, int tenantId, String featureId,
+            boolean isDetailedErrorMessagesEnabled) throws IdentityRecoveryServerException {
+
+        String mappedErrorCode = Utils.prependOperationScenarioToErrorCode(error.getCode(),
+                IdentityRecoveryConstants.PASSWORD_RECOVERY_SCENARIO);
+        StringBuilder message = new StringBuilder(error.getMessage());
+        if (isDetailedErrorMessagesEnabled) {
+            message.append(String.format("featureId: %s \nuserId: %s \ntenantId: %d.", featureId, userId, tenantId));
+        }
+        throw handleServerException(mappedErrorCode, message.toString(), null);
+    }
+
     public static IdentityRecoveryServerException handleServerException(IdentityRecoveryConstants.ErrorMessages
                                                                                 error, String data, Throwable e)
             throws IdentityRecoveryServerException {

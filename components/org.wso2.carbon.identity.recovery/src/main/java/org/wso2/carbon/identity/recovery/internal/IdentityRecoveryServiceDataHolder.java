@@ -22,7 +22,7 @@ import org.wso2.carbon.identity.core.persistence.registry.RegistryResourceMgtSer
 import org.wso2.carbon.identity.event.services.IdentityEventService;
 import org.wso2.carbon.identity.governance.IdentityGovernanceService;
 import org.wso2.carbon.identity.handler.event.account.lock.service.AccountLockService;
-import org.wso2.carbon.identity.user.feature.lock.mgt.FeatureLockManager;
+import org.wso2.carbon.identity.user.feature.mgt.UserFeatureManager;
 import org.wso2.carbon.idp.mgt.IdpManager;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -39,7 +39,7 @@ public class IdentityRecoveryServiceDataHolder {
     private AccountLockService accountLockService;
     private ConsentManager consentManager;
     private ConsentUtilityService consentUtilityService;
-    private FeatureLockManager featureLockManagerService;
+    private UserFeatureManager userFeatureManagerService;
     public static IdentityRecoveryServiceDataHolder getInstance() {
         return instance;
     }
@@ -144,22 +144,22 @@ public class IdentityRecoveryServiceDataHolder {
     }
 
     /**
-     * Get feature lock manager service.
+     * Get user feature manager service.
      *
-     * @return Feature Lock Manager service.
+     * @return User Feature Manager service.
      */
-    public FeatureLockManager getFeatureLockManagerService() {
+    public UserFeatureManager getUserFeatureManagerService() {
 
-        return featureLockManagerService;
+        return userFeatureManagerService;
     }
 
     /**
-     * Set Feature Lock Manager service.
+     * Set User Feature Manager service.
      *
-     * @param featureLockManagerService Feature lock manager object.
+     * @param userFeatureManagerService User feature manager object.
      */
-    public void setFeatureLockManagerService(FeatureLockManager featureLockManagerService) {
+    public void setUserFeatureManagerService(UserFeatureManager userFeatureManagerService) {
 
-        this.featureLockManagerService = featureLockManagerService;
+        this.userFeatureManagerService = userFeatureManagerService;
     }
 }

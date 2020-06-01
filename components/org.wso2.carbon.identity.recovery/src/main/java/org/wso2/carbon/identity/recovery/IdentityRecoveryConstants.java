@@ -213,12 +213,13 @@ public class IdentityRecoveryConstants {
         ERROR_CODE_ERROR_RETRIVING_CLAIM("18004", "Error when retrieving the locale claim of user '%s' of '%s' domain" +
                 "."),
         ERROR_CODE_FAILED_TO_LOCK_FEATURE_FOR_USER("55001", "Server error occurred while locking feature."),
-        ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE("55002", "Error occurred while fetching lock status."),
-        ERROR_CODE_FAILED_TO_GET_PROPERTIES_FOR_FEATURE("55003", "Error occurred while fetching feature lock " +
+        ERROR_CODE_FAILED_TO_UNLOCK_FEATURE_FOR_USER("55002", "Server error occurred while unlocking feature."),
+        ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE("55003", "Error occurred while fetching lock status."),
+        ERROR_CODE_FAILED_TO_GET_PROPERTIES_FOR_FEATURE("55004", "Error occurred while fetching feature lock " +
                 "properties."),
-        ERROR_CODE_FAILED_TO_ADD_PROPERTIES_FOR_FEATURE("55004", "Error occurred while adding feature lock " +
+        ERROR_CODE_FAILED_TO_ADD_PROPERTIES_FOR_FEATURE("55005", "Error occurred while adding feature lock " +
                 "properties."),
-        ERROR_CODE_FAILED_TO_UPDATE_PROPERTIES_FOR_FEATURE("55005", "Error occurred while updating feature lock " +
+        ERROR_CODE_FAILED_TO_UPDATE_PROPERTIES_FOR_FEATURE("55006", "Error occurred while updating feature lock " +
                 "property."),
 
         // USR - User Self Registration.

@@ -50,9 +50,9 @@ import org.wso2.carbon.identity.recovery.services.password.PasswordRecoveryManag
 import org.wso2.carbon.identity.recovery.store.JDBCRecoveryDataStore;
 import org.wso2.carbon.identity.recovery.store.UserRecoveryDataStore;
 import org.wso2.carbon.identity.recovery.util.Utils;
-import org.wso2.carbon.identity.user.feature.lock.mgt.FeatureLockManager;
-import org.wso2.carbon.identity.user.feature.lock.mgt.exception.FeatureLockManagementException;
-import org.wso2.carbon.identity.user.feature.lock.mgt.model.FeatureLockStatus;
+import org.wso2.carbon.identity.user.feature.mgt.UserFeatureManager;
+import org.wso2.carbon.identity.user.feature.mgt.exception.UserFeatureManagementException;
+import org.wso2.carbon.identity.user.feature.mgt.model.FeatureLockStatus;
 import org.wso2.carbon.registry.core.utils.UUIDGenerator;
 
 import java.util.ArrayList;
@@ -619,12 +619,12 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
         int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
         String userId = Utils.getUserIdFromUserName(tenantId, userName);
 
-        FeatureLockManager featureLockManager =
-                IdentityRecoveryServiceDataHolder.getInstance().getFeatureLockManagerService();
+        UserFeatureManager userFeatureManager =
+                IdentityRecoveryServiceDataHolder.getInstance().getUserFeatureManagerService();
 
         try {
-            return featureLockManager.getFeatureLockStatusForUser(userId, tenantId, featureId);
-        } catch (FeatureLockManagementException e) {
+            return userFeatureManager.getFeatureLockStatusForUser(userId, tenantId, featureId);
+        } catch (UserFeatureManagementException e) {
             String mappedErrorCode =
                     Utils.prependOperationScenarioToErrorCode(
                             IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE
