@@ -43,6 +43,7 @@ import org.wso2.carbon.identity.recovery.IdentityRecoveryException;
 import org.wso2.carbon.identity.recovery.IdentityRecoveryServerException;
 import org.wso2.carbon.identity.recovery.internal.IdentityRecoveryServiceDataHolder;
 import org.wso2.carbon.identity.recovery.model.ChallengeQuestion;
+import org.wso2.carbon.identity.user.feature.mgt.UserFeatureMgtConstants;
 import org.wso2.carbon.user.api.Claim;
 import org.wso2.carbon.user.api.ClaimManager;
 import org.wso2.carbon.user.api.RealmConfiguration;
@@ -870,7 +871,7 @@ public class Utils {
     public static boolean isPerUserFeatureLockingEnabled() {
 
         return Boolean
-                .parseBoolean(IdentityUtil.getProperty(IdentityRecoveryConstants.ENABLE_PER_USER_FEATURE_LOCKING));
+                .parseBoolean(IdentityUtil.getProperty(UserFeatureMgtConstants.ENABLE_PER_USER_FEATURE_LOCKING));
     }
 
     /**

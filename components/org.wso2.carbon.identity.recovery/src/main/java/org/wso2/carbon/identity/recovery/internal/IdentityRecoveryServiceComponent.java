@@ -27,6 +27,7 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.consent.mgt.core.ConsentManager;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.PostAuthenticationHandler;
+import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.carbon.identity.consent.mgt.services.ConsentUtilityService;
 import org.wso2.carbon.identity.core.persistence.registry.RegistryResourceMgtService;
 import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
@@ -339,5 +340,27 @@ public class IdentityRecoveryServiceComponent {
 
         String tenantDomain = MultitenantConstants.SUPER_TENANT_DOMAIN_NAME;
         ChallengeQuestionManager.getInstance().setDefaultChallengeQuestions(tenantDomain);
+    }
+
+    @Reference(
+            name = "carbon.configuration.mgt.component",
+            service = ConfigurationManager.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetConfigurationManager")
+    protected void setConfigurationManager(ConfigurationManager configurationManager) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Configuration Manager service is set in the Template Manager component.");
+        }
+        dataHolder.getInstance().setConfigurationManager(configurationManager);
+    }
+
+    protected void unsetConfigurationManager(ConfigurationManager configurationManager) {
+
+        if (log.isDebugEnabled()) {
+            log.debug("Configuration Manager service is unset in the Template Manager component.");
+        }
+        dataHolder.getInstance().setConfigurationManager(null);
     }
 }

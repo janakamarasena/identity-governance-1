@@ -19,6 +19,7 @@
 
 package org.wso2.carbon.identity.recovery.password;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
@@ -41,6 +42,7 @@ import org.wso2.carbon.identity.recovery.RecoveryScenarios;
 import org.wso2.carbon.identity.recovery.RecoverySteps;
 import org.wso2.carbon.identity.recovery.bean.ChallengeQuestionResponse;
 import org.wso2.carbon.identity.recovery.bean.ChallengeQuestionsResponse;
+import org.wso2.carbon.identity.recovery.handler.ConfigStoreFeatureLockPropertyHandler;
 import org.wso2.carbon.identity.recovery.internal.IdentityRecoveryServiceDataHolder;
 import org.wso2.carbon.identity.recovery.model.ChallengeQuestion;
 import org.wso2.carbon.identity.recovery.model.UserChallengeAnswer;
@@ -62,9 +64,11 @@ import org.wso2.carbon.user.core.service.RealmService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Security Question Password Recovery Manager
@@ -621,7 +625,7 @@ public class SecurityQuestionPasswordRecoveryManager {
             try {
                 Map<String, String> propertiesToUpdate = new HashMap<String, String>();
                 propertiesToUpdate.put(IdentityRecoveryConstants.FEATURE_FAILED_ATTEMPTS_PROPERTY, "0");
-                userFeatureManager.setFeatureLockProperties(userId, tenantId,
+                userFeatureManager.setUserFeatureProperties(userId, tenantId,
                         IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY,
                         propertiesToUpdate);
             } catch (UserFeatureManagementServerException e) {
@@ -748,40 +752,30 @@ public class SecurityQuestionPasswordRecoveryManager {
             return;
         }
 
-        int maxAttempts = 0;
-        long unlockTimePropertyValue = 0;
-        double unlockTimeRatio = 1;
         int tenantId = IdentityTenantUtil.getTenantId(user.getTenantDomain());
         String userId = Utils.getUserIdFromUserName(tenantId, user.getUserName());
 
-        Property[] connectorConfigs = getConnectorConfigs(user.getTenantDomain());
-        for (Property connectorConfig : connectorConfigs) {
-            if ((PROPERTY_ACCOUNT_LOCK_ON_FAILURE.equals(connectorConfig.getName())) &&
-                    !Boolean.parseBoolean(connectorConfig.getValue())) {
-                return;
-            } else if (PROPERTY_ACCOUNT_LOCK_ON_FAILURE_MAX.equals(connectorConfig.getName())
-                    && NumberUtils.isNumber(connectorConfig.getValue())) {
-                maxAttempts = Integer.parseInt(connectorConfig.getValue());
-            } else if (PROPERTY_ACCOUNT_LOCK_TIME.equals(connectorConfig.getName())
-                    && NumberUtils.isNumber(connectorConfig.getValue())) {
-                unlockTimePropertyValue = Integer.parseInt(connectorConfig.getValue());
-            } else if (PROPERTY_LOGIN_FAIL_TIMEOUT_RATIO.equals(connectorConfig.getName())
-                    && NumberUtils.isNumber(connectorConfig.getValue())) {
-                double value = Double.parseDouble(connectorConfig.getValue());
-                if (value > 0) {
-                    unlockTimeRatio = value;
-                }
-            }
-        }
+        Map<String, String> configStoreProperties =
+                ConfigStoreFeatureLockPropertyHandler.getInstance().getConfigStoreProperties(user.getTenantDomain(),
+                        IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY);
+
+        validateUserFeatureProperties(configStoreProperties);
+
+        int maxAttempts =
+                Integer.parseInt(configStoreProperties.get(IdentityRecoveryConstants.FEATURE_MAX_ATTEMPTS_PROPERTY));
+        long unlockTimePropertyValue =
+                Long.getLong(configStoreProperties.get(IdentityRecoveryConstants.FEATURE_LOCKOUT_TIME_PROPERTY));
+        double unlockTimeRatio =
+                Double.parseDouble(
+                        configStoreProperties.get(IdentityRecoveryConstants.FEATURE_LOGIN_FAIL_TIMEOUT_RATIO_PROPERTY));
 
         int currentAttempts = 0;
         int failedLoginLockoutCountValue = 0;
         UserFeatureManager userFeatureManager =
                 IdentityRecoveryServiceDataHolder.getInstance().getUserFeatureManagerService();
         Map<String, String> featureLockProperties;
-
         try {
-            featureLockProperties = userFeatureManager.getFeatureLockProperties(userId, tenantId,
+            featureLockProperties = userFeatureManager.getUserFeatureProperties(userId, tenantId,
                     IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY);
         } catch (UserFeatureManagementServerException e) {
             throw Utils.handleFeatureLockMgtServerException(
@@ -794,9 +788,10 @@ public class SecurityQuestionPasswordRecoveryManager {
                     String.valueOf(failedLoginLockoutCountValue));
             featureLockProperties
                     .put(IdentityRecoveryConstants.FEATURE_FAILED_ATTEMPTS_PROPERTY, String.valueOf(currentAttempts));
-            featureLockProperties.put(IdentityRecoveryConstants.FEATURE_MAX_ATTEMPTS, String.valueOf(maxAttempts));
+            featureLockProperties
+                    .put(IdentityRecoveryConstants.FEATURE_MAX_ATTEMPTS_PROPERTY, String.valueOf(maxAttempts));
             try {
-                userFeatureManager.setFeatureLockProperties(userId, tenantId,
+                userFeatureManager.setUserFeatureProperties(userId, tenantId,
                         IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY,
                         featureLockProperties);
             } catch (UserFeatureManagementServerException e) {
@@ -817,9 +812,9 @@ public class SecurityQuestionPasswordRecoveryManager {
                         featureLockProperties.get(IdentityRecoveryConstants.FEATURE_FAILED_ATTEMPTS_PROPERTY));
             }
             if (NumberUtils.isNumber(
-                    featureLockProperties.get(IdentityRecoveryConstants.FEATURE_MAX_ATTEMPTS))) {
+                    featureLockProperties.get(IdentityRecoveryConstants.FEATURE_MAX_ATTEMPTS_PROPERTY))) {
                 maxAttempts = Integer.parseInt(
-                        featureLockProperties.get(IdentityRecoveryConstants.FEATURE_MAX_ATTEMPTS));
+                        featureLockProperties.get(IdentityRecoveryConstants.FEATURE_MAX_ATTEMPTS_PROPERTY));
             }
         }
 
@@ -839,7 +834,7 @@ public class SecurityQuestionPasswordRecoveryManager {
                                 .getFeatureLockCode(),
                         IdentityRecoveryConstants.RecoveryLockReasons.PWD_RECOVERY_MAX_ATTEMPTS_EXCEEDED
                                 .getFeatureLockReason());
-                userFeatureManager.setFeatureLockProperties(userId, tenantId,
+                userFeatureManager.setUserFeatureProperties(userId, tenantId,
                         IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY,
                         updatedFeatureLockProperties);
             } catch (UserFeatureManagementServerException e) {
@@ -867,7 +862,7 @@ public class SecurityQuestionPasswordRecoveryManager {
                 Map<String, String> propertiesToUpdate = new HashMap<>();
                 propertiesToUpdate.put(IdentityRecoveryConstants.FEATURE_FAILED_ATTEMPTS_PROPERTY,
                         String.valueOf(currentAttempts + 1));
-                userFeatureManager.setFeatureLockProperties(userId, tenantId,
+                userFeatureManager.setUserFeatureProperties(userId, tenantId,
                         IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY,
                         propertiesToUpdate);
             } catch (UserFeatureManagementServerException e) {
@@ -877,6 +872,32 @@ public class SecurityQuestionPasswordRecoveryManager {
                         IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY,
                         isDetailedErrorMessagesEnabled);
             }
+        }
+    }
+
+    private void validateUserFeatureProperties(Map<String, String> configStoreProperties) {
+
+//        Set<String> propertyNames = new HashSet<>(Arrays.asList(PROPERTY_ACCOUNT_LOCK_ON_FAILURE_MAX,
+//                PROPERTY_ACCOUNT_LOCK_TIME, PROPERTY_LOGIN_FAIL_TIMEOUT_RATIO));
+        Set<String> propertyNames = new HashSet<>(Arrays.asList(IdentityRecoveryConstants.FEATURE_MAX_ATTEMPTS_PROPERTY,
+                IdentityRecoveryConstants.FEATURE_LOCKOUT_TIME_PROPERTY,
+                IdentityRecoveryConstants.FEATURE_LOGIN_FAIL_TIMEOUT_RATIO_PROPERTY));
+
+        if (MapUtils.isEmpty(configStoreProperties)) {
+            throw new UnsupportedOperationException("User Feature properties are not configured.");
+        }
+        if (configStoreProperties.keySet().equals(propertyNames)) {
+            if (!NumberUtils.isNumber(IdentityRecoveryConstants.FEATURE_MAX_ATTEMPTS_PROPERTY)) {
+                throw new UnsupportedOperationException("User Feature properties are not configured.");
+            }
+            if (!NumberUtils.isNumber(IdentityRecoveryConstants.FEATURE_LOCKOUT_TIME_PROPERTY)) {
+                throw new UnsupportedOperationException("User Feature properties are not configured.");
+            }
+            if (!NumberUtils.isNumber(IdentityRecoveryConstants.FEATURE_LOGIN_FAIL_TIMEOUT_RATIO_PROPERTY)) {
+                throw new UnsupportedOperationException("User Feature properties are not configured.");
+            }
+        } else {
+            throw new UnsupportedOperationException("User Feature properties are not configured.");
         }
     }
 

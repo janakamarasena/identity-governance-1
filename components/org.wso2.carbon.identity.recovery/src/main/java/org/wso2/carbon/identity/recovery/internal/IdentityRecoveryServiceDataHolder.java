@@ -17,6 +17,7 @@
 package org.wso2.carbon.identity.recovery.internal;
 
 import org.wso2.carbon.consent.mgt.core.ConsentManager;
+import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.carbon.identity.consent.mgt.services.ConsentUtilityService;
 import org.wso2.carbon.identity.core.persistence.registry.RegistryResourceMgtService;
 import org.wso2.carbon.identity.event.services.IdentityEventService;
@@ -38,6 +39,7 @@ public class IdentityRecoveryServiceDataHolder {
     private RegistryResourceMgtService resourceMgtService;
     private AccountLockService accountLockService;
     private ConsentManager consentManager;
+    private ConfigurationManager configurationManager;
     private ConsentUtilityService consentUtilityService;
     private UserFeatureManager userFeatureManagerService;
     public static IdentityRecoveryServiceDataHolder getInstance() {
@@ -161,5 +163,25 @@ public class IdentityRecoveryServiceDataHolder {
     public void setUserFeatureManagerService(UserFeatureManager userFeatureManagerService) {
 
         this.userFeatureManagerService = userFeatureManagerService;
+    }
+
+    /**
+     * Get the ConfigurationManager object held at the data holder.
+     *
+     * @return Configuration manger object.
+     */
+    public ConfigurationManager getConfigurationManager() {
+
+        return this.configurationManager;
+    }
+
+    /**
+     * Set the ConfigurationManager.
+     *
+     * @param configurationManager configuration manger object.
+     */
+    public void setConfigurationManager(ConfigurationManager configurationManager) {
+
+        this.configurationManager = configurationManager;
     }
 }

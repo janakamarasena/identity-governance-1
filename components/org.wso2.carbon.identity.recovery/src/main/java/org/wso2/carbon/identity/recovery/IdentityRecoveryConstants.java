@@ -59,12 +59,14 @@ public class IdentityRecoveryConstants {
 
     public static final String FEATURE_LOCKOUT_COUNT_PROPERTY = "LockoutCount";
     public static final String FEATURE_FAILED_ATTEMPTS_PROPERTY = "FailedAttempts";
-    public static final String FEATURE_MAX_ATTEMPTS = "MaxAttempts";
+    public static final String FEATURE_MAX_ATTEMPTS_PROPERTY = "MaxAttempts";
+    public static final String FEATURE_LOCKOUT_TIME_PROPERTY = "LockoutTime";
+    public static final String FEATURE_LOGIN_FAIL_TIMEOUT_RATIO_PROPERTY = "TimeoutRatio";
 
     public static final String USER_NEW_CHALLENGE_ANSWERS = "userNewChallengeAnswers";
     public static final String USER_OLD_CHALLENGE_ANSWERS = "userOldChallengeAnswers";
 
-    public static final String ENABLE_PER_USER_FEATURE_LOCKING = "EnablePerUserFeatureLocking";
+    public static final String FEATURE_LOCK_RESOURCE_TYPE = "featureLock";
 
     // Notification channel claims.
     public static final String VERIFY_EMAIL_CLIAM = "http://wso2.org/claims/identity/verifyEmail";
@@ -221,7 +223,10 @@ public class IdentityRecoveryConstants {
                 "properties."),
         ERROR_CODE_FAILED_TO_UPDATE_PROPERTIES_FOR_FEATURE("55006", "Error occurred while updating feature lock " +
                 "property."),
-
+        ERROR_CODE_FAILED_TO_ADD_RESOURCE_TYPE_TO_CONFIG_STORE("55007", "Error occurred while adding resource type to" +
+                " config store."),
+        ERROR_CODE_FAILED_TO_FETCH_RESOURCE_FROM_CONFIG_STORE("55007", "Error occurred while fetching " +
+                "resource from config store."),
         // USR - User Self Registration.
         ERROR_CODE_UNSUPPORTED_PREFERRED_CHANNELS("USR-10001",
                 "User specified communication channel is not supported by the server"),
