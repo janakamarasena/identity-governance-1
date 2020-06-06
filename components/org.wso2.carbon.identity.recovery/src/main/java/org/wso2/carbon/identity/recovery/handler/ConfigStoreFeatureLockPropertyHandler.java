@@ -21,22 +21,17 @@ package org.wso2.carbon.identity.recovery.handler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
-import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.carbon.identity.configuration.mgt.core.constant.ConfigurationConstants;
 import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationManagementClientException;
 import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationManagementException;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Resource;
-import org.wso2.carbon.identity.configuration.mgt.core.model.ResourceAdd;
-import org.wso2.carbon.identity.configuration.mgt.core.model.ResourceTypeAdd;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.recovery.IdentityRecoveryConstants;
 import org.wso2.carbon.identity.recovery.IdentityRecoveryServerException;
-import org.wso2.carbon.identity.recovery.handler.function.PropertiesToResourceAdd;
 import org.wso2.carbon.identity.recovery.handler.function.ResourceToProperties;
 import org.wso2.carbon.identity.recovery.internal.IdentityRecoveryServiceDataHolder;
 import org.wso2.carbon.identity.recovery.util.Utils;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -57,23 +52,6 @@ public class ConfigStoreFeatureLockPropertyHandler {
 
     }
 
-    public void addConfigStoreProperties(String tenantDomain, String featureId, Map<String, String> properties)
-            throws IdentityRecoveryServerException {
-
-        startTenantFlow(tenantDomain);
-        try {
-            addFeatureLockResourceTypeIfNotExists();
-            ResourceAdd resourceAdd = new PropertiesToResourceAdd().apply(featureId, properties);
-            IdentityRecoveryServiceDataHolder.getInstance().getConfigurationManager()
-                    .addResource(IdentityRecoveryConstants.FEATURE_LOCK_RESOURCE_TYPE, resourceAdd);
-        } catch (ConfigurationManagementException e) {
-            throw Utils.handleServerException(
-                    IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_ADD_RESOURCE_TYPE_TO_CONFIG_STORE,
-                    null);
-        }
-        endTenantFlow();
-    }
-
     public Map<String, String> getConfigStoreProperties(String tenantDomain, String featureId)
             throws IdentityRecoveryServerException {
 
@@ -81,10 +59,15 @@ public class ConfigStoreFeatureLockPropertyHandler {
 
         startTenantFlow(tenantDomain);
         try {
-            Resource resource =
-                    IdentityRecoveryServiceDataHolder.getInstance().getConfigurationManager()
-                            .getResource(IdentityRecoveryConstants.FEATURE_LOCK_RESOURCE_TYPE, featureId);
-            properties = new ResourceToProperties().apply(resource);
+            if (!isFeatureLockResourceTypeNotExists()) {
+                Resource resource =
+                        IdentityRecoveryServiceDataHolder.getInstance().getConfigurationManager()
+                                .getResource(IdentityRecoveryConstants.FEATURE_LOCK_RESOURCE_TYPE, featureId);
+                properties = new ResourceToProperties().apply(resource);
+            } else {
+                throw new UnsupportedOperationException("User Feature properties are not configured.");
+            }
+
         } catch (ConfigurationManagementException e) {
             throw Utils.handleServerException(
                     IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_FETCH_RESOURCE_FROM_CONFIG_STORE,
@@ -92,18 +75,6 @@ public class ConfigStoreFeatureLockPropertyHandler {
         }
         endTenantFlow();
         return properties;
-    }
-
-    /**
-     * Add the FeatureLock resource type to the ConfigurationManager if not already present.
-     *
-     * @throws ConfigurationManagementException
-     */
-    private void addFeatureLockResourceTypeIfNotExists() throws ConfigurationManagementException {
-
-        if (isFeatureLockResourceTypeNotExists()) {
-            createFeatureLockResourceType();
-        }
     }
 
     /**
@@ -126,22 +97,6 @@ public class ConfigStoreFeatureLockPropertyHandler {
             throw e;
         }
         return false;
-    }
-
-    /**
-     * Create a ResourceTypeAdd for Feature Lock type.
-     *
-     * @return ResourceTypeAdd A resource type with featureLock set as the name.
-     */
-    private void createFeatureLockResourceType() throws ConfigurationManagementException {
-
-        ConfigurationManager configManager =
-                IdentityRecoveryServiceDataHolder.getInstance().getConfigurationManager();
-        ResourceTypeAdd resourceType = new ResourceTypeAdd();
-        resourceType.setName(IdentityRecoveryConstants.FEATURE_LOCK_RESOURCE_TYPE);
-        resourceType.setDescription(
-                "This is the resource type for " + IdentityRecoveryConstants.FEATURE_LOCK_RESOURCE_TYPE);
-        configManager.addResourceType(resourceType);
     }
 
     /**

@@ -877,8 +877,6 @@ public class SecurityQuestionPasswordRecoveryManager {
 
     private void validateUserFeatureProperties(Map<String, String> configStoreProperties) {
 
-//        Set<String> propertyNames = new HashSet<>(Arrays.asList(PROPERTY_ACCOUNT_LOCK_ON_FAILURE_MAX,
-//                PROPERTY_ACCOUNT_LOCK_TIME, PROPERTY_LOGIN_FAIL_TIMEOUT_RATIO));
         Set<String> propertyNames = new HashSet<>(Arrays.asList(IdentityRecoveryConstants.FEATURE_MAX_ATTEMPTS_PROPERTY,
                 IdentityRecoveryConstants.FEATURE_LOCKOUT_TIME_PROPERTY,
                 IdentityRecoveryConstants.FEATURE_LOGIN_FAIL_TIMEOUT_RATIO_PROPERTY));
