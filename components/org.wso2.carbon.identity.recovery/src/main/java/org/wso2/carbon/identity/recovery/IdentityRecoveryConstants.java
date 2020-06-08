@@ -56,6 +56,7 @@ public class IdentityRecoveryConstants {
     public static final String ACCOUNT_DISABLED_CLAIM = "http://wso2.org/claims/identity/accountDisabled";
     public static final String FAILED_LOGIN_LOCKOUT_COUNT_CLAIM =
             "http://wso2.org/claims/identity/failedLoginLockoutCount";
+    public static final String ACCOUNT_VERIFIED_TIME_CLAIM = "http://wso2.org/claims/identity/accountVerifiedTime";
 
     public static final String USER_NEW_CHALLENGE_ANSWERS = "userNewChallengeAnswers";
     public static final String USER_OLD_CHALLENGE_ANSWERS = "userOldChallengeAnswers";

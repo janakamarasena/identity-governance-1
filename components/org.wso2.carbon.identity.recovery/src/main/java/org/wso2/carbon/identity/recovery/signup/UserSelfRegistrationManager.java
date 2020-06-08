@@ -83,6 +83,8 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.security.SecureRandom;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -832,6 +834,8 @@ public class UserSelfRegistrationManager {
             }
             userClaims.put(IdentityRecoveryConstants.EMAIL_VERIFIED_CLAIM, Boolean.TRUE.toString());
         }
+        userClaims.put(IdentityRecoveryConstants.ACCOUNT_VERIFIED_TIME_CLAIM, new SimpleDateFormat("yyyy.MM.dd.HH.mm" +
+                ".ss").format(new Date()));
     }
 
     /**
