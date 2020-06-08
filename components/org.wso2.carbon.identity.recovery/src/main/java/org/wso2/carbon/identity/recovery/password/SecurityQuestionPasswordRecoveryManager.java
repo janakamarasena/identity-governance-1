@@ -764,7 +764,7 @@ public class SecurityQuestionPasswordRecoveryManager {
         int maxAttempts =
                 Integer.parseInt(configStoreProperties.get(IdentityRecoveryConstants.FEATURE_MAX_ATTEMPTS_PROPERTY));
         long unlockTimePropertyValue =
-                Long.getLong(configStoreProperties.get(IdentityRecoveryConstants.FEATURE_LOCKOUT_TIME_PROPERTY));
+                Integer.parseInt(configStoreProperties.get(IdentityRecoveryConstants.FEATURE_LOCKOUT_TIME_PROPERTY));
         double unlockTimeRatio =
                 Double.parseDouble(
                         configStoreProperties.get(IdentityRecoveryConstants.FEATURE_LOGIN_FAIL_TIMEOUT_RATIO_PROPERTY));
@@ -810,11 +810,6 @@ public class SecurityQuestionPasswordRecoveryManager {
                     featureLockProperties.get(IdentityRecoveryConstants.FEATURE_FAILED_ATTEMPTS_PROPERTY))) {
                 currentAttempts = Integer.parseInt(
                         featureLockProperties.get(IdentityRecoveryConstants.FEATURE_FAILED_ATTEMPTS_PROPERTY));
-            }
-            if (NumberUtils.isNumber(
-                    featureLockProperties.get(IdentityRecoveryConstants.FEATURE_MAX_ATTEMPTS_PROPERTY))) {
-                maxAttempts = Integer.parseInt(
-                        featureLockProperties.get(IdentityRecoveryConstants.FEATURE_MAX_ATTEMPTS_PROPERTY));
             }
         }
 
@@ -885,13 +880,16 @@ public class SecurityQuestionPasswordRecoveryManager {
             throw new UnsupportedOperationException("User Feature properties are not configured.");
         }
         if (configStoreProperties.keySet().equals(propertyNames)) {
-            if (!NumberUtils.isNumber(IdentityRecoveryConstants.FEATURE_MAX_ATTEMPTS_PROPERTY)) {
+            if (!NumberUtils
+                    .isNumber(configStoreProperties.get(IdentityRecoveryConstants.FEATURE_MAX_ATTEMPTS_PROPERTY))) {
                 throw new UnsupportedOperationException("User Feature properties are not configured.");
             }
-            if (!NumberUtils.isNumber(IdentityRecoveryConstants.FEATURE_LOCKOUT_TIME_PROPERTY)) {
+            if (!NumberUtils
+                    .isNumber(configStoreProperties.get(IdentityRecoveryConstants.FEATURE_LOCKOUT_TIME_PROPERTY))) {
                 throw new UnsupportedOperationException("User Feature properties are not configured.");
             }
-            if (!NumberUtils.isNumber(IdentityRecoveryConstants.FEATURE_LOGIN_FAIL_TIMEOUT_RATIO_PROPERTY)) {
+            if (!NumberUtils.isNumber(
+                    configStoreProperties.get(IdentityRecoveryConstants.FEATURE_LOGIN_FAIL_TIMEOUT_RATIO_PROPERTY))) {
                 throw new UnsupportedOperationException("User Feature properties are not configured.");
             }
         } else {
