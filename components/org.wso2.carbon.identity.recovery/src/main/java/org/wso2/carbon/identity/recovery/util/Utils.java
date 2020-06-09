@@ -892,7 +892,7 @@ public class Utils {
      * @param userName Username of the user.
      * @return Unique identifier of the user.
      */
-    public static String getUserIdFromUserName(int tenantId, String userName)
+    public static String getUserId(String userName, int tenantId)
             throws IdentityRecoveryServerException {
 
         org.wso2.carbon.user.core.UserStoreManager userStoreManager;

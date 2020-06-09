@@ -66,8 +66,9 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
 
     private static final Log log = LogFactory.getLog(PasswordRecoveryManagerImpl.class);
 
-    private boolean isPerUserFeatureLockingEnabled = Utils.isPerUserFeatureLockingEnabled();
-    private static boolean isDetailedErrorMessagesEnabled = Utils.isDetailedErrorResponseEnabled();
+    private static final boolean isPerUserFeatureLockingEnabled = Utils.isPerUserFeatureLockingEnabled();
+
+    private static final boolean isDetailedErrorMessagesEnabled = Utils.isDetailedErrorResponseEnabled();
 
     /**
      * Get the username recovery information with available verified channel details.
@@ -617,7 +618,7 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
             throws IdentityRecoveryServerException {
 
         int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
-        String userId = Utils.getUserIdFromUserName(tenantId, userName);
+        String userId = Utils.getUserId(userName, tenantId);
 
         UserFeatureManager userFeatureManager =
                 IdentityRecoveryServiceDataHolder.getInstance().getUserFeatureManagerService();

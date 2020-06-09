@@ -85,10 +85,11 @@ public class SecurityQuestionPasswordRecoveryManager {
 
     private static final String PROPERTY_LOGIN_FAIL_TIMEOUT_RATIO = "account.lock.handler.login.fail.timeout.ratio";
 
-    private static SecurityQuestionPasswordRecoveryManager instance = new SecurityQuestionPasswordRecoveryManager();
+    private static final boolean isPerUserFeatureLockingEnabled = Utils.isPerUserFeatureLockingEnabled();
 
-    private static boolean isPerUserFeatureLockingEnabled = Utils.isPerUserFeatureLockingEnabled();
-    private static boolean isDetailedErrorMessagesEnabled = Utils.isDetailedErrorResponseEnabled();
+    private static final boolean isDetailedErrorMessagesEnabled = Utils.isDetailedErrorResponseEnabled();
+
+    private static SecurityQuestionPasswordRecoveryManager instance = new SecurityQuestionPasswordRecoveryManager();
 
     private SecurityQuestionPasswordRecoveryManager() {
 
@@ -122,22 +123,7 @@ public class SecurityQuestionPasswordRecoveryManager {
             throw Utils.handleClientException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_QUESTION_BASED_RECOVERY_NOT_ENABLE, null);
         }
 
-        if (isPerUserFeatureLockingEnabled) {
-            FeatureLockStatus featureLockStatus = getFeatureStatusOfUser(user,
-                    IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY);
-
-            if (featureLockStatus.getLockStatus()) {
-                StringBuilder message = new StringBuilder(
-                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED
-                                .getMessage());
-                if (isDetailedErrorMessagesEnabled) {
-                    message.append(": ").append(featureLockStatus.getFeatureLockReason());
-                }
-                throw IdentityException.error(IdentityRecoveryClientException.class,
-                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED.getCode(),
-                        message.toString());
-            }
-        }
+        validateFeatureForUser(user);
 
         UserRecoveryDataStore userRecoveryDataStore = JDBCRecoveryDataStore.getInstance();
         userRecoveryDataStore.invalidate(user);
@@ -215,6 +201,26 @@ public class SecurityQuestionPasswordRecoveryManager {
         return challengeQuestionResponse;
     }
 
+    private void validateFeatureForUser(User user)
+            throws IdentityRecoveryServerException, IdentityRecoveryClientException {
+
+        if (isPerUserFeatureLockingEnabled) {
+            FeatureLockStatus featureLockStatus = getFeatureStatusOfUser(user,
+                    IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY);
+
+            if (featureLockStatus.getLockStatus()) {
+                StringBuilder message = new StringBuilder(
+                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED
+                                .getMessage());
+                if (isDetailedErrorMessagesEnabled) {
+                    message.append(": ").append(featureLockStatus.getFeatureLockReason());
+                }
+                throw IdentityException.error(IdentityRecoveryClientException.class,
+                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED.getCode(),
+                        message.toString());
+            }
+        }
+    }
 
     public ChallengeQuestionsResponse initiateUserChallengeQuestionAtOnce(User user) throws IdentityRecoveryException {
         String challengeQuestionSeparator = IdentityUtil.getProperty(IdentityRecoveryConstants.ConnectorConfig
@@ -320,22 +326,7 @@ public class SecurityQuestionPasswordRecoveryManager {
         //if return data from load, it means the code is validated. Otherwise it returns exceptions.
         User user = userRecoveryData.getUser();
 
-        if (isPerUserFeatureLockingEnabled) {
-            FeatureLockStatus featureLockStatus = getFeatureStatusOfUser(user,
-                    IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY);
-
-            if (featureLockStatus.getLockStatus()) {
-                StringBuilder message = new StringBuilder(
-                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED
-                                .getMessage());
-                if (isDetailedErrorMessagesEnabled) {
-                    message.append(": ").append(featureLockStatus.getFeatureLockReason());
-                }
-                throw IdentityException.error(IdentityRecoveryClientException.class,
-                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_SECURITY_QUESTION_BASED_PWR_LOCKED.getCode(),
-                        message.toString());
-            }
-        }
+        validateFeatureForUser(user);
 
         try {
             boolean isRecoveryEnable = Boolean.parseBoolean(Utils.getRecoveryConfigs(IdentityRecoveryConstants
@@ -605,7 +596,7 @@ public class SecurityQuestionPasswordRecoveryManager {
             }
         }
         int tenantId = IdentityTenantUtil.getTenantId(user.getTenantDomain());
-        String userId = Utils.getUserIdFromUserName(tenantId, user.getUserName());
+        String userId = Utils.getUserId(user.getUserName(), tenantId);
         UserFeatureManager userFeatureManager =
                 IdentityRecoveryServiceDataHolder.getInstance().getUserFeatureManagerService();
 
@@ -753,7 +744,7 @@ public class SecurityQuestionPasswordRecoveryManager {
         }
 
         int tenantId = IdentityTenantUtil.getTenantId(user.getTenantDomain());
-        String userId = Utils.getUserIdFromUserName(tenantId, user.getUserName());
+        String userId = Utils.getUserId(user.getUserName(), tenantId);
 
         Map<String, String> configStoreProperties =
                 ConfigStoreFeatureLockPropertyHandler.getInstance().getConfigStoreProperties(user.getTenantDomain(),
@@ -938,7 +929,7 @@ public class SecurityQuestionPasswordRecoveryManager {
             throws IdentityRecoveryServerException {
 
         int tenantId = IdentityTenantUtil.getTenantId(user.getTenantDomain());
-        String userId = Utils.getUserIdFromUserName(tenantId, user.getUserName());
+        String userId = Utils.getUserId(user.getUserName(), tenantId);
 
         UserFeatureManager userFeatureManager =
                 IdentityRecoveryServiceDataHolder.getInstance().getUserFeatureManagerService();

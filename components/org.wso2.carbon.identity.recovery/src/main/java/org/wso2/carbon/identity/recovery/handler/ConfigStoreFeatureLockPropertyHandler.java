@@ -20,12 +20,11 @@ package org.wso2.carbon.identity.recovery.handler;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
 import org.wso2.carbon.identity.configuration.mgt.core.constant.ConfigurationConstants;
 import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationManagementClientException;
 import org.wso2.carbon.identity.configuration.mgt.core.exception.ConfigurationManagementException;
 import org.wso2.carbon.identity.configuration.mgt.core.model.Resource;
-import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.recovery.IdentityRecoveryConstants;
 import org.wso2.carbon.identity.recovery.IdentityRecoveryServerException;
 import org.wso2.carbon.identity.recovery.handler.function.ResourceToProperties;
@@ -56,24 +55,26 @@ public class ConfigStoreFeatureLockPropertyHandler {
             throws IdentityRecoveryServerException {
 
         Map<String, String> properties;
-
-        startTenantFlow(tenantDomain);
         try {
-            if (!isFeatureLockResourceTypeNotExists()) {
-                Resource resource =
-                        IdentityRecoveryServiceDataHolder.getInstance().getConfigurationManager()
-                                .getResource(IdentityRecoveryConstants.FEATURE_LOCK_RESOURCE_TYPE, featureId);
-                properties = new ResourceToProperties().apply(resource);
-            } else {
-                throw new UnsupportedOperationException("User Feature properties are not configured.");
-            }
+            FrameworkUtils.startTenantFlow(tenantDomain);
+            try {
+                if (!isFeatureLockResourceTypeNotExists()) {
+                    Resource resource =
+                            IdentityRecoveryServiceDataHolder.getInstance().getConfigurationManager()
+                                    .getResource(IdentityRecoveryConstants.FEATURE_LOCK_RESOURCE_TYPE, featureId);
+                    properties = new ResourceToProperties().apply(resource);
+                } else {
+                    throw new UnsupportedOperationException("User Feature properties are not configured.");
+                }
 
-        } catch (ConfigurationManagementException e) {
-            throw Utils.handleServerException(
-                    IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_FETCH_RESOURCE_FROM_CONFIG_STORE,
-                    null);
+            } catch (ConfigurationManagementException e) {
+                throw Utils.handleServerException(
+                        IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_FETCH_RESOURCE_FROM_CONFIG_STORE,
+                        null);
+            }
+        } finally {
+            FrameworkUtils.endTenantFlow();
         }
-        endTenantFlow();
         return properties;
     }
 
@@ -97,36 +98,5 @@ public class ConfigStoreFeatureLockPropertyHandler {
             throw e;
         }
         return false;
-    }
-
-    /**
-     * Setting the tenant for the scenarios where the tenant is unavailable in context.
-     *
-     * @param tenantDomain The tenant domain.
-     */
-    private void startTenantFlow(String tenantDomain) {
-
-        int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
-
-        PrivilegedCarbonContext.startTenantFlow();
-        PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantDomain(tenantDomain);
-        PrivilegedCarbonContext.getThreadLocalCarbonContext().setTenantId(tenantId);
-
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Tenant flow started for %s.", tenantDomain));
-        }
-    }
-
-    /**
-     * End the tenant flow started in startTenantFlow.
-     */
-    private void endTenantFlow() {
-
-        String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
-        PrivilegedCarbonContext.endTenantFlow();
-
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Tenant flow ended for %s.", tenantDomain));
-        }
     }
 }

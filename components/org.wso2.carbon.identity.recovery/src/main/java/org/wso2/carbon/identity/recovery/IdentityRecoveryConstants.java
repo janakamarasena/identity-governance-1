@@ -225,7 +225,7 @@ public class IdentityRecoveryConstants {
                 "property."),
         ERROR_CODE_FAILED_TO_ADD_RESOURCE_TYPE_TO_CONFIG_STORE("55007", "Error occurred while adding resource type to" +
                 " config store."),
-        ERROR_CODE_FAILED_TO_FETCH_RESOURCE_FROM_CONFIG_STORE("55007", "Error occurred while fetching " +
+        ERROR_CODE_FAILED_TO_FETCH_RESOURCE_FROM_CONFIG_STORE("55008", "Error occurred while fetching " +
                 "resource from config store."),
         // USR - User Self Registration.
         ERROR_CODE_UNSUPPORTED_PREFERRED_CHANNELS("USR-10001",
