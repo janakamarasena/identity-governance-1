@@ -41,8 +41,10 @@ import org.wso2.carbon.identity.consent.mgt.exceptions.ConsentUtilityServiceExce
 import org.wso2.carbon.identity.consent.mgt.services.ConsentUtilityService;
 import org.wso2.carbon.identity.core.util.IdentityTenantUtil;
 import org.wso2.carbon.identity.core.util.IdentityUtil;
+import org.wso2.carbon.identity.event.IdentityEventClientException;
 import org.wso2.carbon.identity.event.IdentityEventConstants;
 import org.wso2.carbon.identity.event.IdentityEventException;
+import org.wso2.carbon.identity.event.IdentityEventServerException;
 import org.wso2.carbon.identity.event.event.Event;
 import org.wso2.carbon.identity.governance.IdentityGovernanceException;
 import org.wso2.carbon.identity.governance.IdentityMgtConstants;
@@ -82,15 +84,12 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.security.SecureRandom;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Set;
 
 
 /**
@@ -638,12 +637,36 @@ public class UserSelfRegistrationManager {
                         .SkipEmailVerificationOnUpdateStates.SKIP_ON_CONFIRM.toString());
             }
         }
-
+        // Verify the user account.
+        triggerUserAccountVerification(user, userStoreManager, userClaims,
+                IdentityEventConstants.Event.POST_VERIFY_USER_ACCOUNT);
         // Update the user claims.
         updateUserClaims(userStoreManager, user, userClaims);
-
         // Invalidate code.
         userRecoveryDataStore.invalidate(code);
+    }
+
+    private void triggerUserAccountVerification(User user, UserStoreManager userStoreManager,
+                                                Map<String, String> userClaims, String eventName)
+            throws IdentityRecoveryServerException, IdentityRecoveryClientException {
+
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(IdentityEventConstants.EventProperty.USER, user);
+        properties.put(IdentityEventConstants.EventProperty.USER_CLAIMS, userClaims);
+        properties.put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
+
+        Event identityMgtEvent = new Event(eventName, properties);
+        try {
+            IdentityRecoveryServiceDataHolder.getInstance().getIdentityEventService().handleEvent(identityMgtEvent);
+        } catch (IdentityEventClientException e) {
+            throw new IdentityRecoveryClientException(e.getErrorCode(), e.getMessage(), e);
+        } catch (IdentityEventServerException e) {
+            throw new IdentityRecoveryServerException(e.getErrorCode(), e.getMessage(), e);
+        } catch (IdentityEventException e) {
+            throw Utils
+                    .handleServerException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_PUBLISH_EVENT, eventName,
+                            e);
+        }
     }
 
     /**
@@ -834,8 +857,6 @@ public class UserSelfRegistrationManager {
             }
             userClaims.put(IdentityRecoveryConstants.EMAIL_VERIFIED_CLAIM, Boolean.TRUE.toString());
         }
-        userClaims.put(IdentityRecoveryConstants.ACCOUNT_VERIFIED_TIME_CLAIM, new SimpleDateFormat("yyyy.MM.dd.HH.mm" +
-                ".ss").format(new Date()));
     }
 
     /**
