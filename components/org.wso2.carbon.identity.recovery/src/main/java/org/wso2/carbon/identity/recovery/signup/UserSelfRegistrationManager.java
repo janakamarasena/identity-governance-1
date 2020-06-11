@@ -638,8 +638,7 @@ public class UserSelfRegistrationManager {
             }
         }
         // Verify the user account.
-        triggerUserAccountVerification(user, userStoreManager, userClaims,
-                IdentityEventConstants.Event.POST_VERIFY_USER_ACCOUNT);
+        triggerUserAccountVerification(user, userStoreManager, userClaims);
         // Update the user claims.
         updateUserClaims(userStoreManager, user, userClaims);
         // Invalidate code.
@@ -647,7 +646,7 @@ public class UserSelfRegistrationManager {
     }
 
     private void triggerUserAccountVerification(User user, UserStoreManager userStoreManager,
-                                                Map<String, String> userClaims, String eventName)
+                                                Map<String, String> userClaims)
             throws IdentityRecoveryServerException, IdentityRecoveryClientException {
 
         Map<String, Object> properties = new HashMap<>();
@@ -655,7 +654,7 @@ public class UserSelfRegistrationManager {
         properties.put(IdentityEventConstants.EventProperty.USER_CLAIMS, userClaims);
         properties.put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
 
-        Event identityMgtEvent = new Event(eventName, properties);
+        Event identityMgtEvent = new Event(IdentityEventConstants.Event.POST_USER_ACCOUNT_VERIFICATION, properties);
         try {
             IdentityRecoveryServiceDataHolder.getInstance().getIdentityEventService().handleEvent(identityMgtEvent);
         } catch (IdentityEventClientException e) {
@@ -664,8 +663,8 @@ public class UserSelfRegistrationManager {
             throw new IdentityRecoveryServerException(e.getErrorCode(), e.getMessage(), e);
         } catch (IdentityEventException e) {
             throw Utils
-                    .handleServerException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_PUBLISH_EVENT, eventName,
-                            e);
+                    .handleServerException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_PUBLISH_EVENT,
+                            IdentityEventConstants.Event.POST_USER_ACCOUNT_VERIFICATION, e);
         }
     }
 
