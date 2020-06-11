@@ -84,6 +84,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -638,15 +639,15 @@ public class UserSelfRegistrationManager {
             }
         }
         // Verify the user account.
-        triggerUserAccountVerification(user, userStoreManager, userClaims);
+        triggerPostUserAccountVerificationEvent(user, userStoreManager, userClaims);
         // Update the user claims.
         updateUserClaims(userStoreManager, user, userClaims);
         // Invalidate code.
         userRecoveryDataStore.invalidate(code);
     }
 
-    private void triggerUserAccountVerification(User user, UserStoreManager userStoreManager,
-                                                Map<String, String> userClaims)
+    private void triggerPostUserAccountVerificationEvent(User user, UserStoreManager userStoreManager,
+                                                         Map<String, String> userClaims)
             throws IdentityRecoveryServerException, IdentityRecoveryClientException {
 
         Map<String, Object> properties = new HashMap<>();
@@ -747,6 +748,8 @@ public class UserSelfRegistrationManager {
 
         // Set the verified claims to TRUE.
         setVerificationClaims(user, verificationChannel, externallyVerifiedChannelClaim, recoveryScenario, userClaims);
+        //Set account verified time claim.
+        userClaims.put(IdentityRecoveryConstants.ACCOUNT_VERIFIED_TIME_CLAIM, Instant.now().toString());
         return userClaims;
     }
 
