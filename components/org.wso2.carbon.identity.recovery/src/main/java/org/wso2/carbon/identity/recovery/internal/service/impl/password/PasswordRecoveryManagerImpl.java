@@ -50,9 +50,9 @@ import org.wso2.carbon.identity.recovery.services.password.PasswordRecoveryManag
 import org.wso2.carbon.identity.recovery.store.JDBCRecoveryDataStore;
 import org.wso2.carbon.identity.recovery.store.UserRecoveryDataStore;
 import org.wso2.carbon.identity.recovery.util.Utils;
-import org.wso2.carbon.identity.user.feature.mgt.UserFeatureManager;
-import org.wso2.carbon.identity.user.feature.mgt.exception.UserFeatureManagementException;
-import org.wso2.carbon.identity.user.feature.mgt.model.FeatureLockStatus;
+import org.wso2.carbon.identity.user.functionality.mgt.UserFunctionalityManager;
+import org.wso2.carbon.identity.user.functionality.mgt.exception.UserFunctionalityManagementException;
+import org.wso2.carbon.identity.user.functionality.mgt.model.FunctionalityLockStatus;
 import org.wso2.carbon.registry.core.utils.UUIDGenerator;
 
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
 
     private static final Log log = LogFactory.getLog(PasswordRecoveryManagerImpl.class);
 
-    private static final boolean isPerUserFeatureLockingEnabled = Utils.isPerUserFeatureLockingEnabled();
+    private static final boolean isPerUserFunctionalityLockingEnabled = Utils.isPerUserFunctionalityLockingEnabled();
 
     private static final boolean isDetailedErrorMessagesEnabled = Utils.isDetailedErrorResponseEnabled();
 
@@ -108,11 +108,12 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
         if (isNotificationBasedRecoveryEnabled) {
             recoveryInformationDTO.setRecoveryChannelInfoDTO(recoveryChannelInfoDTO);
         }
-        // Check if question based password recovery is unlocked in per-user feature locking mode.
-        if (isPerUserFeatureLockingEnabled) {
-            boolean isQuestionBasedRecoveryLocked = getFeatureStatusOfUser(tenantDomain,
+        // Check if question based password recovery is unlocked in per-user functionality locking mode.
+        if (isPerUserFunctionalityLockingEnabled) {
+            boolean isQuestionBasedRecoveryLocked = getFunctionalityStatusOfUser(tenantDomain,
                     recoveryChannelInfoDTO.getUsername(),
-                    IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY).getLockStatus();
+                    IdentityRecoveryConstants.FunctionalityTypes.FUNCTIONALITY_SECURITY_QUESTION_PW_RECOVERY)
+                    .getLockStatus();
             recoveryInformationDTO.setQuestionBasedRecoveryEnabled(!isQuestionBasedRecoveryLocked);
         } else {
             recoveryInformationDTO.setQuestionBasedRecoveryEnabled(isQuestionBasedRecoveryEnabled);
@@ -607,36 +608,37 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
     }
 
     /**
-     * Get the lock status of a feature given the tenant domain, user name and the feature type.
+     * Get the lock status of a functionality given the tenant domain, user name and the functionality type.
      *
-     * @param tenantDomain Tenant domain of the user.
-     * @param userName     Username of the user.
-     * @param featureId    Identifier of the the feature.
-     * @return The status of the feature, {@link FeatureLockStatus}.
+     * @param tenantDomain            Tenant domain of the user.
+     * @param userName                Username of the user.
+     * @param functionalityIdentifier Identifier of the the functionality.
+     * @return The status of the functionality, {@link FunctionalityLockStatus}.
      */
-    private FeatureLockStatus getFeatureStatusOfUser(String tenantDomain, String userName, String featureId)
+    private FunctionalityLockStatus getFunctionalityStatusOfUser(String tenantDomain, String userName,
+                                                                 String functionalityIdentifier)
             throws IdentityRecoveryServerException {
 
         int tenantId = IdentityTenantUtil.getTenantId(tenantDomain);
         String userId = Utils.getUserId(userName, tenantId);
 
-        UserFeatureManager userFeatureManager =
-                IdentityRecoveryServiceDataHolder.getInstance().getUserFeatureManagerService();
+        UserFunctionalityManager userFunctionalityManager =
+                IdentityRecoveryServiceDataHolder.getInstance().getUserFunctionalityManagerService();
 
         try {
-            return userFeatureManager.getFeatureLockStatusForUser(userId, tenantId, featureId);
-        } catch (UserFeatureManagementException e) {
+            return userFunctionalityManager.getLockStatus(userId, tenantId, functionalityIdentifier);
+        } catch (UserFunctionalityManagementException e) {
             String mappedErrorCode =
                     Utils.prependOperationScenarioToErrorCode(
-                            IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE
+                            IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FUNCTIONALITY
                                     .getCode(), IdentityRecoveryConstants.PASSWORD_RECOVERY_SCENARIO);
             StringBuilder message =
                     new StringBuilder(
-                            IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE
+                            IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FUNCTIONALITY
                                     .getMessage());
             if (isDetailedErrorMessagesEnabled) {
-                message.append(String.format("featureId: %s for %s.",
-                        IdentityRecoveryConstants.FeatureTypes.FEATURE_SECURITY_QUESTION_PW_RECOVERY,
+                message.append(String.format("functionality: %s for %s.",
+                        IdentityRecoveryConstants.FunctionalityTypes.FUNCTIONALITY_SECURITY_QUESTION_PW_RECOVERY,
                         userName));
             }
             throw Utils.handleServerException(mappedErrorCode, message.toString(), null);

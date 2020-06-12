@@ -23,7 +23,7 @@ import org.wso2.carbon.identity.core.persistence.registry.RegistryResourceMgtSer
 import org.wso2.carbon.identity.event.services.IdentityEventService;
 import org.wso2.carbon.identity.governance.IdentityGovernanceService;
 import org.wso2.carbon.identity.handler.event.account.lock.service.AccountLockService;
-import org.wso2.carbon.identity.user.feature.mgt.UserFeatureManager;
+import org.wso2.carbon.identity.user.functionality.mgt.UserFunctionalityManager;
 import org.wso2.carbon.idp.mgt.IdpManager;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -41,7 +41,7 @@ public class IdentityRecoveryServiceDataHolder {
     private ConsentManager consentManager;
     private ConfigurationManager configurationManager;
     private ConsentUtilityService consentUtilityService;
-    private UserFeatureManager userFeatureManagerService;
+    private UserFunctionalityManager userFunctionalityManagerService;
     public static IdentityRecoveryServiceDataHolder getInstance() {
         return instance;
     }
@@ -146,23 +146,23 @@ public class IdentityRecoveryServiceDataHolder {
     }
 
     /**
-     * Get user feature manager service.
+     * Get user functionality manager service.
      *
-     * @return User Feature Manager service.
+     * @return User Functionality Manager service.
      */
-    public UserFeatureManager getUserFeatureManagerService() {
+    public UserFunctionalityManager getUserFunctionalityManagerService() {
 
-        return userFeatureManagerService;
+        return userFunctionalityManagerService;
     }
 
     /**
-     * Set User Feature Manager service.
+     * Set User Functionality Manager service.
      *
-     * @param userFeatureManagerService User feature manager object.
+     * @param userFunctionalityManagerService User functionality manager object.
      */
-    public void setUserFeatureManagerService(UserFeatureManager userFeatureManagerService) {
+    public void setUserFunctionalityManagerService(UserFunctionalityManager userFunctionalityManagerService) {
 
-        this.userFeatureManagerService = userFeatureManagerService;
+        this.userFunctionalityManagerService = userFunctionalityManagerService;
     }
 
     /**

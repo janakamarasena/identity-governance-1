@@ -59,7 +59,7 @@ import org.wso2.carbon.identity.recovery.services.password.PasswordRecoveryManag
 import org.wso2.carbon.identity.recovery.services.username.UsernameRecoveryManager;
 import org.wso2.carbon.identity.recovery.signup.UserSelfRegistrationManager;
 import org.wso2.carbon.identity.recovery.username.NotificationUsernameRecoveryManager;
-import org.wso2.carbon.identity.user.feature.mgt.UserFeatureManager;
+import org.wso2.carbon.identity.user.functionality.mgt.UserFunctionalityManager;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.stratos.common.listeners.TenantMgtListener;
 import org.wso2.carbon.user.core.service.RealmService;
@@ -311,29 +311,29 @@ public class IdentityRecoveryServiceComponent {
     }
 
     /**
-     * Sets User Feature Manager OSGI Service.
+     * Sets User Functionality Manager OSGI Service.
      *
-     * @param userFeatureManager Feature Lock Manager.
+     * @param userFunctionalityManager User Functionality Manager.
      */
     @Reference(
-            name = "UserFeatureManager",
-            service = org.wso2.carbon.identity.user.feature.mgt.UserFeatureManager.class,
+            name = "UserFunctionalityManager",
+            service = org.wso2.carbon.identity.user.functionality.mgt.UserFunctionalityManager.class,
             cardinality = ReferenceCardinality.MANDATORY,
             policy = ReferencePolicy.DYNAMIC,
-            unbind = "unsetFeatureLockMgtService")
-    protected void setFeatureLockManagerService(UserFeatureManager userFeatureManager) {
+            unbind = "unsetUserFunctionalityMgtService")
+    protected void setUserFunctionalityManagerService(UserFunctionalityManager userFunctionalityManager) {
 
-        dataHolder.getInstance().setUserFeatureManagerService(userFeatureManager);
+        dataHolder.getInstance().setUserFunctionalityManagerService(userFunctionalityManager);
     }
 
     /**
-     * Unset User Feature Manager OSGI service.
+     * Unset User Functionality Manager OSGI service.
      *
-     * @param userFeatureManager Feature Lock Manager.
+     * @param userFunctionalityManager User Functionality Manager.
      */
-    protected void unsetFeatureLockMgtService(UserFeatureManager userFeatureManager) {
+    protected void unsetUserFunctionalityMgtService(UserFunctionalityManager userFunctionalityManager) {
 
-        dataHolder.getInstance().setUserFeatureManagerService(null);
+        dataHolder.getInstance().setUserFunctionalityManagerService(null);
     }
 
     private void loadDefaultChallengeQuestions() throws IdentityRecoveryException {

@@ -36,35 +36,36 @@ import java.util.Map;
 /**
  * Config store based property handler.
  */
-public class ConfigStoreFeatureLockPropertyHandler {
+public class ConfigStoreFunctionalityLockPropertyHandler {
 
-    private static final Log log = LogFactory.getLog(ConfigStoreFeatureLockPropertyHandler.class);
+    private static final Log log = LogFactory.getLog(ConfigStoreFunctionalityLockPropertyHandler.class);
 
-    private static ConfigStoreFeatureLockPropertyHandler instance = new ConfigStoreFeatureLockPropertyHandler();
+    private static ConfigStoreFunctionalityLockPropertyHandler
+            instance = new ConfigStoreFunctionalityLockPropertyHandler();
 
-    public static ConfigStoreFeatureLockPropertyHandler getInstance() {
+    public static ConfigStoreFunctionalityLockPropertyHandler getInstance() {
 
         return instance;
     }
 
-    private ConfigStoreFeatureLockPropertyHandler() {
+    private ConfigStoreFunctionalityLockPropertyHandler() {
 
     }
 
-    public Map<String, String> getConfigStoreProperties(String tenantDomain, String featureId)
+    public Map<String, String> getConfigStoreProperties(String tenantDomain, String functionalityIdentifier)
             throws IdentityRecoveryServerException {
 
         Map<String, String> properties;
         try {
             FrameworkUtils.startTenantFlow(tenantDomain);
             try {
-                if (!isFeatureLockResourceTypeNotExists()) {
+                if (!isFunctionalityLockResourceTypeNotExists()) {
                     Resource resource =
                             IdentityRecoveryServiceDataHolder.getInstance().getConfigurationManager()
-                                    .getResource(IdentityRecoveryConstants.FEATURE_LOCK_RESOURCE_TYPE, featureId);
+                                    .getResource(IdentityRecoveryConstants.FUNCTIONALITY_LOCK_RESOURCE_TYPE, functionalityIdentifier);
                     properties = new ResourceToProperties().apply(resource);
                 } else {
-                    throw new UnsupportedOperationException("User Feature properties are not configured.");
+                    throw new UnsupportedOperationException("User Functionality properties are not configured.");
                 }
 
             } catch (ConfigurationManagementException e) {
@@ -79,17 +80,17 @@ public class ConfigStoreFeatureLockPropertyHandler {
     }
 
     /**
-     * Returns true if the Feature Lock type is already in the ConfigurationManager.
+     * Returns true if the Functionality Lock type is already in the ConfigurationManager.
      *
-     * @return {@code true} if the Feature Lock resource type is already in the ConfigurationManager,
+     * @return {@code true} if the Functionality Lock resource type is already in the ConfigurationManager,
      * {@code false} otherwise.
      * @throws ConfigurationManagementException
      */
-    private boolean isFeatureLockResourceTypeNotExists() throws ConfigurationManagementException {
+    private boolean isFunctionalityLockResourceTypeNotExists() throws ConfigurationManagementException {
 
         try {
             IdentityRecoveryServiceDataHolder.getInstance().getConfigurationManager()
-                    .getResourceType(IdentityRecoveryConstants.FEATURE_LOCK_RESOURCE_TYPE);
+                    .getResourceType(IdentityRecoveryConstants.FUNCTIONALITY_LOCK_RESOURCE_TYPE);
         } catch (ConfigurationManagementClientException e) {
             if (ConfigurationConstants.ErrorMessages.ERROR_CODE_RESOURCE_TYPE_DOES_NOT_EXISTS.getCode()
                     .equals(e.getErrorCode())) {

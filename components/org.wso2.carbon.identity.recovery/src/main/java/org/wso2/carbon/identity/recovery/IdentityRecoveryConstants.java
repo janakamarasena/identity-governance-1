@@ -57,16 +57,16 @@ public class IdentityRecoveryConstants {
     public static final String FAILED_LOGIN_LOCKOUT_COUNT_CLAIM =
             "http://wso2.org/claims/identity/failedLoginLockoutCount";
 
-    public static final String FEATURE_LOCKOUT_COUNT_PROPERTY = "LockoutCount";
-    public static final String FEATURE_FAILED_ATTEMPTS_PROPERTY = "FailedAttempts";
-    public static final String FEATURE_MAX_ATTEMPTS_PROPERTY = "MaxAttempts";
-    public static final String FEATURE_LOCKOUT_TIME_PROPERTY = "LockoutTime";
-    public static final String FEATURE_LOGIN_FAIL_TIMEOUT_RATIO_PROPERTY = "TimeoutRatio";
+    public static final String FUNCTION_LOCKOUT_COUNT_PROPERTY = "LockoutCount";
+    public static final String FUNCTION_FAILED_ATTEMPTS_PROPERTY = "FailedAttempts";
+    public static final String FUNCTION_MAX_ATTEMPTS_PROPERTY = "MaxAttempts";
+    public static final String FUNCTION_LOCKOUT_TIME_PROPERTY = "LockoutTime";
+    public static final String FUNCTION_LOGIN_FAIL_TIMEOUT_RATIO_PROPERTY = "TimeoutRatio";
 
     public static final String USER_NEW_CHALLENGE_ANSWERS = "userNewChallengeAnswers";
     public static final String USER_OLD_CHALLENGE_ANSWERS = "userOldChallengeAnswers";
 
-    public static final String FEATURE_LOCK_RESOURCE_TYPE = "featureLock";
+    public static final String FUNCTIONALITY_LOCK_RESOURCE_TYPE = "functionalityLock";
 
     // Notification channel claims.
     public static final String VERIFY_EMAIL_CLIAM = "http://wso2.org/claims/identity/verifyEmail";
@@ -214,15 +214,16 @@ public class IdentityRecoveryConstants {
                 " question %s of the set %s"),
         ERROR_CODE_ERROR_RETRIVING_CLAIM("18004", "Error when retrieving the locale claim of user '%s' of '%s' domain" +
                 "."),
-        ERROR_CODE_FAILED_TO_LOCK_FEATURE_FOR_USER("55001", "Server error occurred while locking feature."),
-        ERROR_CODE_FAILED_TO_UNLOCK_FEATURE_FOR_USER("55002", "Server error occurred while unlocking feature."),
-        ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FEATURE("55003", "Error occurred while fetching lock status."),
-        ERROR_CODE_FAILED_TO_GET_PROPERTIES_FOR_FEATURE("55004", "Error occurred while fetching feature lock " +
-                "properties."),
-        ERROR_CODE_FAILED_TO_ADD_PROPERTIES_FOR_FEATURE("55005", "Error occurred while adding feature lock " +
-                "properties."),
-        ERROR_CODE_FAILED_TO_UPDATE_PROPERTIES_FOR_FEATURE("55006", "Error occurred while updating feature lock " +
-                "property."),
+        ERROR_CODE_FAILED_TO_LOCK_FUNCTIONALITY_FOR_USER("55001", "Server error occurred while locking functionality."),
+        ERROR_CODE_FAILED_TO_UNLOCK_FUNCTIONALITY_FOR_USER("55002", "Server error occurred while unlocking " +
+                "functionality."),
+        ERROR_CODE_FAILED_TO_GET_LOCK_STATUS_FOR_FUNCTIONALITY("55003", "Error occurred while fetching lock status."),
+        ERROR_CODE_FAILED_TO_GET_PROPERTIES_FOR_FUNCTIONALITY("55004", "Error occurred while fetching  functionality " +
+                "lock properties."),
+        ERROR_CODE_FAILED_TO_ADD_PROPERTIES_FOR_FUNCTIONALITY("55005", "Error occurred while adding functionality " +
+                "lock properties."),
+        ERROR_CODE_FAILED_TO_UPDATE_PROPERTIES_FOR_FUNCTIONALITY("55006", "Error occurred while updating " +
+                "functionality lock property."),
         ERROR_CODE_FAILED_TO_ADD_RESOURCE_TYPE_TO_CONFIG_STORE("55007", "Error occurred while adding resource type to" +
                 " config store."),
         ERROR_CODE_FAILED_TO_FETCH_RESOURCE_FROM_CONFIG_STORE("55008", "Error occurred while fetching " +
@@ -554,42 +555,43 @@ public class IdentityRecoveryConstants {
     }
 
     /**
-     * Enum contains the codes and status messages for per-user feature locking.
+     * Enum contains the codes and status messages for per-user functionality locking.
      */
     public enum RecoveryLockReasons {
         PWD_RECOVERY_MAX_ATTEMPTS_EXCEEDED("FL_001", "Maximum attempts exceeded for password recovery.");
 
-        private final String featureLockCode;
-        private final String featureLockReason;
+        private final String functionalityLockCode;
+        private final String functionalityLockReason;
 
         /**
          * Per-user lock code constructor.
          *
-         * @param featureLockCode   Lock reason code.
-         * @param featureLockReason Reason for the feature lock.
+         * @param functionalityLockCode   Lock reason code.
+         * @param functionalityLockReason Reason for the functionality lock.
          */
-        RecoveryLockReasons(String featureLockCode, String featureLockReason) {
+        RecoveryLockReasons(String functionalityLockCode, String functionalityLockReason) {
 
-            this.featureLockCode = featureLockCode;
-            this.featureLockReason = featureLockReason;
+            this.functionalityLockCode = functionalityLockCode;
+            this.functionalityLockReason = functionalityLockReason;
         }
 
-        public String getFeatureLockReason() {
+        public String getFunctionalityLockReason() {
 
-            return featureLockReason;
+            return functionalityLockReason;
         }
 
-        public String getFeatureLockCode() {
+        public String getFunctionalityLockCode() {
 
-            return featureLockCode;
+            return functionalityLockCode;
         }
     }
 
     /**
-     * Constants used for masking the feature types.
+     * Constants used for masking the functionality types.
      */
-    public static class FeatureTypes {
+    public static class FunctionalityTypes {
 
-        public static final String FEATURE_SECURITY_QUESTION_PW_RECOVERY = "SecurityQuestionBasedPasswordRecovery";
+        public static final String FUNCTIONALITY_SECURITY_QUESTION_PW_RECOVERY =
+                "SecurityQuestionBasedPasswordRecovery";
     }
 }
