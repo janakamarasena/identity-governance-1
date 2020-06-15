@@ -85,6 +85,7 @@ import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.time.Instant;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -638,21 +639,39 @@ public class UserSelfRegistrationManager {
                         .SkipEmailVerificationOnUpdateStates.SKIP_ON_CONFIRM.toString());
             }
         }
+        SimpleEntry<String, String> verifiedChannel = extractVerifiedChannelClaim(userClaims, verifiedChannelClaim);
         // Verify the user account.
-        triggerPostUserAccountVerificationEvent(user, userStoreManager, userClaims);
+        triggerPostUserAccountVerificationEvent(user, userStoreManager, verifiedChannel);
         // Update the user claims.
         updateUserClaims(userStoreManager, user, userClaims);
         // Invalidate code.
         userRecoveryDataStore.invalidate(code);
     }
 
+    private SimpleEntry<String, String> extractVerifiedChannelClaim(HashMap<String, String> userClaims,
+                                                                    String externallyVerifiedClaim) {
+
+        SimpleEntry<String, String> verifiedChannel = null;
+        for (Map.Entry<String, String> entry : userClaims.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (key.equals(externallyVerifiedClaim) || key.equals(IdentityRecoveryConstants.EMAIL_VERIFIED_CLAIM) ||
+                    key.equals(NotificationChannels.SMS_CHANNEL.getVerifiedClaimUrl())) {
+                verifiedChannel = new SimpleEntry<String, String>(key, value);
+                break;
+            }
+        }
+        return verifiedChannel;
+    }
+
     private void triggerPostUserAccountVerificationEvent(User user, UserStoreManager userStoreManager,
-                                                         Map<String, String> userClaims)
+                                                         SimpleEntry<String, String> verifiedChannelClaim)
             throws IdentityRecoveryServerException, IdentityRecoveryClientException {
 
         Map<String, Object> properties = new HashMap<>();
         properties.put(IdentityEventConstants.EventProperty.USER, user);
-        properties.put(IdentityEventConstants.EventProperty.USER_CLAIMS, userClaims);
+        properties.put(IdentityEventConstants.EventProperty.CLAIM_URI, verifiedChannelClaim.getKey());
+        properties.put(IdentityEventConstants.EventProperty.CLAIM_VALUE, verifiedChannelClaim.getValue());
         properties.put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
 
         Event identityMgtEvent = new Event(IdentityEventConstants.Event.POST_USER_ACCOUNT_VERIFICATION, properties);
