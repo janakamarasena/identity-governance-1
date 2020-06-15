@@ -137,7 +137,7 @@ public class IdentityRecoveryConstants {
         ERROR_CODE_EXPIRED_CODE("18002", "Expired Code '%s.'"),
         ERROR_CODE_INVALID_USER("18003", "Invalid User '%s.'"),
         ERROR_CODE_UNEXPECTED("18013", "Unexpected error"),
-        ERROR_CODE_RECOVERY_NOTIFICATION_FAILURE("18015", "Error sending recovery notification"),
+        ERROR_CODE_RECOVERY_NOTIFICATION_FAILURE("18015", "Error sending recovery noti`fication"),
         ERROR_CODE_INVALID_TENANT("18016", "Invalid tenant'%s.'"),
         ERROR_CODE_CHALLENGE_QUESTION_NOT_FOUND("18017", "No challenge question found. %s"),
         ERROR_CODE_INVALID_CREDENTIALS("17002", "Invalid Credentials"),
@@ -558,6 +558,7 @@ public class IdentityRecoveryConstants {
      * Enum contains the codes and status messages for per-user functionality locking.
      */
     public enum RecoveryLockReasons {
+
         PWD_RECOVERY_MAX_ATTEMPTS_EXCEEDED("FL_001", "Maximum attempts exceeded for password recovery.");
 
         private final String functionalityLockCode;

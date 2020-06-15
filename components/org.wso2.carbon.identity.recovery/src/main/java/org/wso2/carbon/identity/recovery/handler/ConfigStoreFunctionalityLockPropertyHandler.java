@@ -59,7 +59,7 @@ public class ConfigStoreFunctionalityLockPropertyHandler {
         try {
             FrameworkUtils.startTenantFlow(tenantDomain);
             try {
-                if (!isFunctionalityLockResourceTypeNotExists()) {
+                if (isFunctionalityLockResourceTypeExists()) {
                     Resource resource =
                             IdentityRecoveryServiceDataHolder.getInstance().getConfigurationManager()
                                     .getResource(IdentityRecoveryConstants.FUNCTIONALITY_LOCK_RESOURCE_TYPE, functionalityIdentifier);
@@ -86,7 +86,7 @@ public class ConfigStoreFunctionalityLockPropertyHandler {
      * {@code false} otherwise.
      * @throws ConfigurationManagementException
      */
-    private boolean isFunctionalityLockResourceTypeNotExists() throws ConfigurationManagementException {
+    private boolean isFunctionalityLockResourceTypeExists() throws ConfigurationManagementException {
 
         try {
             IdentityRecoveryServiceDataHolder.getInstance().getConfigurationManager()
@@ -94,10 +94,10 @@ public class ConfigStoreFunctionalityLockPropertyHandler {
         } catch (ConfigurationManagementClientException e) {
             if (ConfigurationConstants.ErrorMessages.ERROR_CODE_RESOURCE_TYPE_DOES_NOT_EXISTS.getCode()
                     .equals(e.getErrorCode())) {
-                return true;
+                return false;
             }
             throw e;
         }
-        return false;
+        return true;
     }
 }
