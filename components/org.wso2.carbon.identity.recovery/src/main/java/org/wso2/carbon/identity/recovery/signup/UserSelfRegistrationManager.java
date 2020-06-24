@@ -639,42 +639,40 @@ public class UserSelfRegistrationManager {
                         .SkipEmailVerificationOnUpdateStates.SKIP_ON_CONFIRM.toString());
             }
         }
-        SimpleEntry<String, String> verifiedChannel = extractVerifiedChannelClaim(userClaims, verifiedChannelClaim);
+        String verifiedChannelURI = extractVerifiedChannelURI(userClaims, verifiedChannelClaim);
         // Verify the user account.
-        triggerPostUserAccountVerificationEvent(user, userStoreManager, verifiedChannel);
+        triggerPostUserAccountConfirmationEvent(user, userStoreManager, verifiedChannelURI);
         // Update the user claims.
         updateUserClaims(userStoreManager, user, userClaims);
         // Invalidate code.
         userRecoveryDataStore.invalidate(code);
     }
 
-    private SimpleEntry<String, String> extractVerifiedChannelClaim(HashMap<String, String> userClaims,
-                                                                    String externallyVerifiedClaim) {
+    private String extractVerifiedChannelURI(HashMap<String, String> userClaims,
+                                                                  String externallyVerifiedClaim) {
 
-        SimpleEntry<String, String> verifiedChannel = null;
+        String verifiedChannelURI = null;
         for (Map.Entry<String, String> entry : userClaims.entrySet()) {
             String key = entry.getKey();
-            String value = entry.getValue();
             if (key.equals(externallyVerifiedClaim) || key.equals(IdentityRecoveryConstants.EMAIL_VERIFIED_CLAIM) ||
                     key.equals(NotificationChannels.SMS_CHANNEL.getVerifiedClaimUrl())) {
-                verifiedChannel = new SimpleEntry<String, String>(key, value);
+                verifiedChannelURI = key;
                 break;
             }
         }
-        return verifiedChannel;
+        return verifiedChannelURI;
     }
 
-    private void triggerPostUserAccountVerificationEvent(User user, UserStoreManager userStoreManager,
-                                                         SimpleEntry<String, String> verifiedChannelClaim)
+    private void triggerPostUserAccountConfirmationEvent(User user, UserStoreManager userStoreManager,
+                                                         String verifiedChannelURI)
             throws IdentityRecoveryServerException, IdentityRecoveryClientException {
 
         Map<String, Object> properties = new HashMap<>();
         properties.put(IdentityEventConstants.EventProperty.USER, user);
-        properties.put(IdentityEventConstants.EventProperty.CLAIM_URI, verifiedChannelClaim.getKey());
-        properties.put(IdentityEventConstants.EventProperty.CLAIM_VALUE, verifiedChannelClaim.getValue());
+        properties.put(IdentityEventConstants.EventProperty.VERIFIED_CHANNEL, verifiedChannelURI);
         properties.put(IdentityEventConstants.EventProperty.USER_STORE_MANAGER, userStoreManager);
 
-        Event identityMgtEvent = new Event(IdentityEventConstants.Event.POST_USER_ACCOUNT_VERIFICATION, properties);
+        Event identityMgtEvent = new Event(IdentityEventConstants.Event.POST_USER_ACCOUNT_CONFIRMATION, properties);
         try {
             IdentityRecoveryServiceDataHolder.getInstance().getIdentityEventService().handleEvent(identityMgtEvent);
         } catch (IdentityEventClientException e) {
@@ -684,7 +682,7 @@ public class UserSelfRegistrationManager {
         } catch (IdentityEventException e) {
             throw Utils
                     .handleServerException(IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_PUBLISH_EVENT,
-                            IdentityEventConstants.Event.POST_USER_ACCOUNT_VERIFICATION, e);
+                            IdentityEventConstants.Event.POST_USER_ACCOUNT_CONFIRMATION, e);
         }
     }
 
