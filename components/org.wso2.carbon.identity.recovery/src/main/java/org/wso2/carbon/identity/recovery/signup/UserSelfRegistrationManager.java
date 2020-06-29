@@ -639,13 +639,13 @@ public class UserSelfRegistrationManager {
                         .SkipEmailVerificationOnUpdateStates.SKIP_ON_CONFIRM.toString());
             }
         }
-        String verifiedChannelURI = extractVerifiedChannelURI(userClaims, verifiedChannelClaim);
-        // Verify the user account.
-        triggerPostUserAccountConfirmationEvent(user, userStoreManager, verifiedChannelURI);
         // Update the user claims.
         updateUserClaims(userStoreManager, user, userClaims);
         // Invalidate code.
         userRecoveryDataStore.invalidate(code);
+        String verifiedChannelURI = extractVerifiedChannelURI(userClaims, verifiedChannelClaim);
+        // Verify the user account.
+        triggerPostUserAccountConfirmationEvent(user, userStoreManager, verifiedChannelURI);
     }
 
     private String extractVerifiedChannelURI(HashMap<String, String> userClaims,
