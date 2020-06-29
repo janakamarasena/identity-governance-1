@@ -103,7 +103,7 @@ public class IdentityUserMetadataMgtHandler extends AbstractEventHandler {
     @Override
     public String getName() {
 
-        return "authenticationFlowClaimUpdateHandler";
+        return "identityUserMetadataMgtHandler";
     }
 
     @Override
@@ -120,6 +120,6 @@ public class IdentityUserMetadataMgtHandler extends AbstractEventHandler {
 
     public String getFriendlyName() {
 
-        return "Authentication Flow Claim Update Handler";
+        return "Identity User Metadata Management Handler";
     }
 }
