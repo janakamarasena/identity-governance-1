@@ -30,7 +30,6 @@ import org.wso2.carbon.identity.event.handler.AbstractEventHandler;
 import org.wso2.carbon.identity.mgt.constants.IdentityMgtConstants;
 import org.wso2.carbon.user.core.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
-import org.wso2.carbon.user.core.common.AbstractUserStoreManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +40,8 @@ import java.util.Map;
 public class IdentityUserMetadataMgtHandler extends AbstractEventHandler {
 
     private static final Log log = LogFactory.getLog(IdentityUserMetadataMgtHandler.class);
+    private static final String POST_AUTHENTICATION = "post_authentication";
+    private static final String POST_CREDENTIAL_UPDATE = "post_credential_update";
 
     @Override
     public void handleEvent(Event event) throws IdentityEventException {
@@ -65,19 +66,9 @@ public class IdentityUserMetadataMgtHandler extends AbstractEventHandler {
             log.debug("Start handling post authentication event.");
         }
         if (Boolean.parseBoolean((String) eventProperties.get(IdentityEventConstants.EventProperty.AUTHENTICATION_STATUS))) {
-            String userName = (String) eventProperties.get(IdentityEventConstants.EventProperty.USER_NAME);
             String lastLoginTime = Long.toString(System.currentTimeMillis());
-            Map<String, String> userClaims = new HashMap<>();
-            userClaims.put(IdentityMgtConstants.LAST_LOGIN_TIME, lastLoginTime);
-            try {
-                userStoreManager.setUserClaimValues(userName, userClaims, null);
-                if (log.isDebugEnabled()) {
-                    log.debug("Successfully updated the user claims related to post authentication event.");
-                }
-            } catch (UserStoreException e) {
-                throw new IdentityEventException(
-                        "Error occurred while updating user claims related to post authentication event.", e);
-            }
+            setUserClaim(userStoreManager, eventProperties, IdentityMgtConstants.LAST_LOGIN_TIME,
+                    lastLoginTime, POST_AUTHENTICATION);
         }
     }
 
@@ -87,24 +78,25 @@ public class IdentityUserMetadataMgtHandler extends AbstractEventHandler {
         if (log.isDebugEnabled()) {
             log.debug("Start handling post credential update event.");
         }
+        String lastPasswordUpdateTime = Long.toString(System.currentTimeMillis());
+        setUserClaim(userStoreManager, eventProperties, IdentityMgtConstants.LAST_PASSWORD_UPDATE_TIME,
+                lastPasswordUpdateTime, POST_CREDENTIAL_UPDATE);
+    }
+
+    private void setUserClaim(UserStoreManager userStoreManager, Map<String, Object> eventProperties,
+                              String claimURI, String claimValue, String eventName) throws IdentityEventException {
+
+        String username = (String) eventProperties.get(IdentityEventConstants.EventProperty.USER_NAME);
+        Map<String, String> userClaims = new HashMap<>();
+        userClaims.put(claimURI, claimValue);
         try {
-            String username;
-            if (eventProperties.containsKey(IdentityEventConstants.EventProperty.USER_NAME)) {
-                username = (String) eventProperties.get(IdentityEventConstants.EventProperty.USER_NAME);
-            } else {
-                username = ((AbstractUserStoreManager) userStoreManager).getUserNameFromUserID(
-                        (String) eventProperties.get(IdentityEventConstants.EventProperty.USER_ID));
-            }
-            String lastPasswordUpdateTime = Long.toString(System.currentTimeMillis());
-            Map<String, String> userClaims = new HashMap<>();
-            userClaims.put(IdentityMgtConstants.LAST_PASSWORD_UPDATE_TIME, lastPasswordUpdateTime);
             userStoreManager.setUserClaimValues(username, userClaims, null);
             if (log.isDebugEnabled()) {
-                log.debug("Successfully updated the user claims related to post credential update event.");
+                log.debug(String.format("Successfully updated the user claims related to %s event.", eventName));
             }
         } catch (UserStoreException e) {
             throw new IdentityEventException(
-                    "Error occurred while updating user claims related to credential update event.", e);
+                    String.format("Error occurred while updating user claims related to %s event.", eventName), e);
         }
     }
 
