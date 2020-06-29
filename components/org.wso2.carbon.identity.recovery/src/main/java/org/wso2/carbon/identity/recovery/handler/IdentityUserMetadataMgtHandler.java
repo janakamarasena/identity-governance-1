@@ -65,7 +65,7 @@ public class IdentityUserMetadataMgtHandler extends AbstractEventHandler {
         if (log.isDebugEnabled()) {
             log.debug("Start handling post authentication event.");
         }
-        if (Boolean.parseBoolean((String) eventProperties.get(IdentityEventConstants.EventProperty.AUTHENTICATION_STATUS))) {
+        if ((Boolean) eventProperties.get(IdentityEventConstants.EventProperty.OPERATION_STATUS)) {
             String lastLoginTime = Long.toString(System.currentTimeMillis());
             setUserClaim(userStoreManager, eventProperties, IdentityMgtConstants.LAST_LOGIN_TIME,
                     lastLoginTime, POST_AUTHENTICATION);
