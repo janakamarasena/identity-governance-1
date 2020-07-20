@@ -919,4 +919,17 @@ public class Utils {
         }
         return userId;
     }
+
+    /**
+     * Checks whether the configuration to skip returning the challenge question recovery option in the response for
+     * initiate password recovery API if the user doesn't have the expected minimum number of questions answered is
+     * enabled.
+     *
+     * @return true if the config is set to true, false otherwise.
+     */
+    public static boolean isSkipRecoveryWithChallengeQuestionsForInsufficientAnswersEnabled() {
+
+        return Boolean.parseBoolean(IdentityUtil.getProperty(IdentityRecoveryConstants
+                .RECOVERY_QUESTION_PASSWORD_SKIP_ON_INSUFFICIENT_ANSWERS));
+    }
 }
