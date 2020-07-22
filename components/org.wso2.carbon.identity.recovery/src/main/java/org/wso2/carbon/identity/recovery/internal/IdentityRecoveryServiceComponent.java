@@ -27,6 +27,7 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.wso2.carbon.consent.mgt.core.ConsentManager;
 import org.wso2.carbon.identity.application.authentication.framework.handler.request.PostAuthenticationHandler;
+import org.wso2.carbon.identity.claim.metadata.mgt.ClaimMetadataManagementService;
 import org.wso2.carbon.identity.configuration.mgt.core.ConfigurationManager;
 import org.wso2.carbon.identity.consent.mgt.services.ConsentUtilityService;
 import org.wso2.carbon.identity.core.persistence.registry.RegistryResourceMgtService;
@@ -365,5 +366,21 @@ public class IdentityRecoveryServiceComponent {
             log.debug("Configuration Manager service is unset in the Template Manager component.");
         }
         dataHolder.getInstance().setConfigurationManager(null);
+    }
+
+    @Reference(
+            name = "claim.meta.mgt.service",
+            service = ClaimMetadataManagementService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            policy = ReferencePolicy.DYNAMIC,
+            unbind = "unsetClaimMetaMgtService")
+    protected void setClaimMetaMgtService(ClaimMetadataManagementService claimMetaMgtService) {
+
+        IdentityRecoveryServiceDataHolder.getInstance().setClaimMetadataManagementService(claimMetaMgtService);
+    }
+
+    protected void unsetClaimMetaMgtService(ClaimMetadataManagementService claimMetaMgtService) {
+
+        IdentityRecoveryServiceDataHolder.getInstance().setClaimMetadataManagementService(null);
     }
 }
