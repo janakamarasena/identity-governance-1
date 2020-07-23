@@ -139,6 +139,12 @@ public class ResendCodeApiServiceImpl extends ResendCodeApiService {
                     RecoverySteps.UPDATE_PASSWORD.toString(),
                     IdentityRecoveryConstants.NOTIFICATION_TYPE_RESEND_ADMIN_FORCED_PASSWORD_RESET_WITH_OTP,
                     resendCodeRequestDTO);
+        } else if (RecoveryScenarios.EMAIL_VERIFICATION_ON_UPDATE.toString().equals(recoveryScenario) &&
+                RecoveryScenarios.EMAIL_VERIFICATION_ON_UPDATE.equals(userRecoveryData.getRecoveryScenario()) &&
+                RecoverySteps.VERIFY_EMAIL.equals(userRecoveryData.getRecoveryStep())) {
+            notificationResponseBean = setNotificationResponseBean(resendConfirmationManager,
+                    RecoveryScenarios.EMAIL_VERIFICATION_ON_UPDATE.toString(), RecoverySteps.VERIFY_EMAIL.toString(),
+                    IdentityRecoveryConstants.NOTIFICATION_TYPE_RESEND_VERIFY_EMAIL_ON_UPDATE, resendCodeRequestDTO);
         }
 
         return notificationResponseBean;
