@@ -124,6 +124,10 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
                     IdentityRecoveryConstants.FunctionalityTypes.FUNCTIONALITY_SECURITY_QUESTION_PW_RECOVERY)
                     .getLockStatus();
             if (isSkipRecoveryWithChallengeQuestionsForInsufficientAnswersEnabled) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Skip challenge question-based password recovery if the user has not set answers for" +
+                            " sufficient number of questions is enabled for the tenant: " + tenantDomain);
+                }
                 recoveryInformationDTO.setQuestionBasedRecoveryEnabled(!isQuestionBasedRecoveryLocked &&
                         isMinNoOfRecoveryQuestionsAnswered);
             } else {
@@ -131,6 +135,10 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
             }
         } else {
             if (isSkipRecoveryWithChallengeQuestionsForInsufficientAnswersEnabled) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Skip challenge question-based password recovery if the user has not set answers for" +
+                            " sufficient number of questions is enabled for the tenant: " + tenantDomain);
+                }
                 recoveryInformationDTO.setQuestionBasedRecoveryEnabled(isQuestionBasedRecoveryEnabled &&
                         isMinNoOfRecoveryQuestionsAnswered);
             } else {
@@ -665,7 +673,8 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
     }
 
     /**
-     * Checks if user has answered at least the minimum number of questions with answers required for password recovery.
+     * Checks if user has set answers for at least the minimum number of questions with answers required for password
+     * recovery.
      *
      * @param username     The username of the user.
      * @param tenantDomain The tenant domain of the user.
@@ -678,13 +687,18 @@ public class PasswordRecoveryManagerImpl implements PasswordRecoveryManager {
         User user = Utils.buildUser(username, tenantDomain);
         ChallengeQuestionManager challengeQuestionManager = ChallengeQuestionManager.getInstance();
         String[] ids = challengeQuestionManager.getUserChallengeQuestionIds(user);
+        boolean isMinNoOfRecoveryQuestionsAnswered = false;
 
         if (ids != null) {
             int minNoOfQuestionsToAnswer = Integer.parseInt(Utils.getRecoveryConfigs(IdentityRecoveryConstants
                     .ConnectorConfig.QUESTION_MIN_NO_ANSWER, tenantDomain));
-            return ids.length >= minNoOfQuestionsToAnswer;
+            isMinNoOfRecoveryQuestionsAnswered =  ids.length >= minNoOfQuestionsToAnswer;
+            if (isMinNoOfRecoveryQuestionsAnswered && log.isDebugEnabled()) {
+                log.debug(String.format("User: %s in tenant domain %s has set answers for at least the minimum number" +
+                        " of questions with answers required for password recovery.", username, tenantDomain));
+            }
         }
 
-        return false;
+        return isMinNoOfRecoveryQuestionsAnswered;
     }
 }

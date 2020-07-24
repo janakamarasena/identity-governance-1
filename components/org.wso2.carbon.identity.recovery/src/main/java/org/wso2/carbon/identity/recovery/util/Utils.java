@@ -921,9 +921,8 @@ public class Utils {
     }
 
     /**
-     * Checks whether the configuration to skip returning the challenge question recovery option in the response for
-     * initiate password recovery API if the user doesn't have the expected minimum number of questions answered is
-     * enabled.
+     * Check for the configuration to skip challenge question-based password recovery if the user has not set answers
+     * for a sufficient number of questions.
      *
      * @return true if the config is set to true, false otherwise.
      */
