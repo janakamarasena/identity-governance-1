@@ -606,7 +606,7 @@ public class SecurityQuestionPasswordRecoveryManager {
                         IdentityRecoveryConstants.FunctionalityTypes.FUNCTIONALITY_SECURITY_QUESTION_PW_RECOVERY);
                 userFunctionalityManager.deleteAllPropertiesForUser(userId, tenantId,
                         IdentityRecoveryConstants.FunctionalityTypes.FUNCTIONALITY_SECURITY_QUESTION_PW_RECOVERY);
-            } catch (UserFunctionalityManagementServerException e) {
+            } catch (UserFunctionalityManagementException e) {
                 throw Utils.handleFunctionalityLockMgtServerException(
                         IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_UNLOCK_FUNCTIONALITY_FOR_USER, userId,
                         tenantId, IdentityRecoveryConstants.FunctionalityTypes.FUNCTIONALITY_SECURITY_QUESTION_PW_RECOVERY,
@@ -619,7 +619,7 @@ public class SecurityQuestionPasswordRecoveryManager {
                 userFunctionalityManager.setProperties(userId, tenantId,
                         IdentityRecoveryConstants.FunctionalityTypes.FUNCTIONALITY_SECURITY_QUESTION_PW_RECOVERY,
                         propertiesToUpdate);
-            } catch (UserFunctionalityManagementServerException e) {
+            } catch (UserFunctionalityManagementException e) {
                 throw Utils.handleFunctionalityLockMgtServerException(
                         IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_UPDATE_PROPERTIES_FOR_FUNCTIONALITY,
                         userId,
@@ -769,7 +769,7 @@ public class SecurityQuestionPasswordRecoveryManager {
         try {
             functionalityLockProperties = userFunctionalityManager.getProperties(userId, tenantId,
                     IdentityRecoveryConstants.FunctionalityTypes.FUNCTIONALITY_SECURITY_QUESTION_PW_RECOVERY);
-        } catch (UserFunctionalityManagementServerException e) {
+        } catch (UserFunctionalityManagementException e) {
             throw Utils.handleFunctionalityLockMgtServerException(
                     IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_GET_PROPERTIES_FOR_FUNCTIONALITY, userId,
                     tenantId, IdentityRecoveryConstants.FunctionalityTypes.FUNCTIONALITY_SECURITY_QUESTION_PW_RECOVERY,
@@ -786,7 +786,7 @@ public class SecurityQuestionPasswordRecoveryManager {
                 userFunctionalityManager.setProperties(userId, tenantId,
                         IdentityRecoveryConstants.FunctionalityTypes.FUNCTIONALITY_SECURITY_QUESTION_PW_RECOVERY,
                         functionalityLockProperties);
-            } catch (UserFunctionalityManagementServerException e) {
+            } catch (UserFunctionalityManagementException e) {
                 throw Utils.handleFunctionalityLockMgtServerException(
                         IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_ADD_PROPERTIES_FOR_FUNCTIONALITY, userId,
                         tenantId, IdentityRecoveryConstants.FunctionalityTypes.FUNCTIONALITY_SECURITY_QUESTION_PW_RECOVERY,
@@ -852,7 +852,7 @@ public class SecurityQuestionPasswordRecoveryManager {
                 userFunctionalityManager.setProperties(userId, tenantId,
                         IdentityRecoveryConstants.FunctionalityTypes.FUNCTIONALITY_SECURITY_QUESTION_PW_RECOVERY,
                         propertiesToUpdate);
-            } catch (UserFunctionalityManagementServerException e) {
+            } catch (UserFunctionalityManagementException e) {
                 throw Utils.handleFunctionalityLockMgtServerException(
                         IdentityRecoveryConstants.ErrorMessages.ERROR_CODE_FAILED_TO_UPDATE_PROPERTIES_FOR_FUNCTIONALITY,
                         userId, tenantId,
