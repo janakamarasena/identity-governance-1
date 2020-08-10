@@ -786,8 +786,13 @@ public class UserSelfRegistrationManager {
 
         RealmService realmService = IdentityRecoveryServiceDataHolder.getInstance().getRealmService();
         try {
-            return realmService.getTenantUserRealm(IdentityTenantUtil.getTenantId(user.getTenantDomain()))
-                    .getUserStoreManager();
+            org.wso2.carbon.user.api.UserRealm tenantUserRealm = realmService.getTenantUserRealm(IdentityTenantUtil.
+                    getTenantId(user.getTenantDomain()));
+            if (IdentityUtil.getPrimaryDomainName().equals(user.getUserStoreDomain())) {
+                return tenantUserRealm.getUserStoreManager();
+            }
+            return ((org.wso2.carbon.user.core.UserStoreManager) tenantUserRealm.getUserStoreManager())
+                    .getSecondaryUserStoreManager(user.getUserStoreDomain());
         } catch (UserStoreException e) {
             if (log.isDebugEnabled()) {
                 String message = String
